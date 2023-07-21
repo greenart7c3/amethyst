@@ -93,8 +93,6 @@ import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
 import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
 import com.vitorpamplona.amethyst.service.model.ClassifiedsEvent
-import com.vitorpamplona.amethyst.service.model.CommunityDefinitionEvent
-import com.vitorpamplona.amethyst.service.model.CommunityPostApprovalEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackSelectionEvent
 import com.vitorpamplona.amethyst.service.model.EmojiUrl
@@ -138,11 +136,8 @@ import com.vitorpamplona.amethyst.ui.components.ZoomableUrlImage
 import com.vitorpamplona.amethyst.ui.components.ZoomableUrlVideo
 import com.vitorpamplona.amethyst.ui.components.figureOutMimeType
 import com.vitorpamplona.amethyst.ui.components.imageExtensions
-import com.vitorpamplona.amethyst.ui.screen.equalImmutableLists
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChannelHeader
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.JoinCommunityButton
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.LeaveCommunityButton
 import com.vitorpamplona.amethyst.ui.theme.ButtonBorder
 import com.vitorpamplona.amethyst.ui.theme.DividerThickness
 import com.vitorpamplona.amethyst.ui.theme.DoubleHorzSpacer
@@ -164,8 +159,6 @@ import com.vitorpamplona.amethyst.ui.theme.Size35dp
 import com.vitorpamplona.amethyst.ui.theme.Size55Modifier
 import com.vitorpamplona.amethyst.ui.theme.Size55dp
 import com.vitorpamplona.amethyst.ui.theme.SmallBorder
-import com.vitorpamplona.amethyst.ui.theme.StdHorzSpacer
-import com.vitorpamplona.amethyst.ui.theme.StdPadding
 import com.vitorpamplona.amethyst.ui.theme.StdVertSpacer
 import com.vitorpamplona.amethyst.ui.theme.UserNameMaxRowHeight
 import com.vitorpamplona.amethyst.ui.theme.UserNameRowHeight
@@ -457,15 +450,6 @@ fun NormalNote(
             accountViewModel = accountViewModel,
             nav = nav
         )
-        is CommunityDefinitionEvent -> (baseNote as? AddressableNote)?.let {
-            CommunityHeader(
-                baseNote = it,
-                showBottomDiviser = true,
-                sendToCommunity = true,
-                accountViewModel = accountViewModel,
-                nav = nav
-            )
-        }
         is BadgeDefinitionEvent -> BadgeDisplay(baseNote = baseNote)
         is FileHeaderEvent -> FileHeaderDisplay(baseNote, accountViewModel)
         is FileStorageHeaderEvent -> FileStorageHeaderDisplay(baseNote, accountViewModel)
@@ -491,267 +475,6 @@ fun NormalNote(
 }
 
 @Composable
-fun CommunityHeader(
-    baseNote: AddressableNote,
-    showBottomDiviser: Boolean,
-    sendToCommunity: Boolean,
-    modifier: Modifier = StdPadding,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    val expanded = remember { mutableStateOf(false) }
-
-    Column(
-        modifier = modifier.clickable {
-            if (sendToCommunity) {
-                routeFor(baseNote, accountViewModel.userProfile())?.let {
-                    nav(it)
-                }
-            } else {
-                expanded.value = !expanded.value
-            }
-        }
-    ) {
-        ShortCommunityHeader(baseNote, expanded, accountViewModel, nav)
-
-        if (expanded.value) {
-            LongCommunityHeader(baseNote, accountViewModel, nav)
-        }
-    }
-
-    if (showBottomDiviser) {
-        Divider(
-            thickness = 0.25.dp
-        )
-    }
-}
-
-@Composable
-fun LongCommunityHeader(baseNote: AddressableNote, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    val noteState by baseNote.live().metadata.observeAsState()
-    val noteEvent = remember(noteState) { noteState?.note?.event as? CommunityDefinitionEvent } ?: return
-
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp)
-    ) {
-        val summary = remember(noteState) {
-            noteEvent.description()?.ifBlank { null }
-        }
-
-        Column(
-            Modifier
-                .weight(1f)
-                .padding(start = 10.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val defaultBackground = MaterialTheme.colors.background
-                val background = remember {
-                    mutableStateOf(defaultBackground)
-                }
-
-                TranslatableRichTextViewer(
-                    content = summary ?: stringResource(id = R.string.community_no_descriptor),
-                    canPreview = false,
-                    tags = remember { ImmutableListOfLists(emptyList()) },
-                    backgroundColor = background,
-                    accountViewModel = accountViewModel,
-                    nav = nav
-                )
-            }
-
-            val hashtags = remember(noteEvent) { noteEvent.hashtags().toImmutableList() }
-            DisplayUncitedHashtags(hashtags, summary ?: "", nav)
-        }
-
-        Column() {
-            Row() {
-                Spacer(DoubleHorzSpacer)
-                LongCommunityActionOptions(baseNote, accountViewModel, nav)
-            }
-        }
-    }
-
-    val rules = remember(noteState) {
-        noteEvent.rules()?.ifBlank { null }
-    }
-
-    rules?.let {
-        Spacer(DoubleVertSpacer)
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp)
-        ) {
-            val defaultBackground = MaterialTheme.colors.background
-            val background = remember {
-                mutableStateOf(defaultBackground)
-            }
-            val tags = remember(noteEvent) { noteEvent?.tags()?.toImmutableListOfLists() ?: ImmutableListOfLists() }
-
-            TranslatableRichTextViewer(
-                content = it,
-                canPreview = false,
-                tags = tags,
-                backgroundColor = background,
-                accountViewModel = accountViewModel,
-                nav = nav
-            )
-        }
-    }
-
-    Spacer(DoubleVertSpacer)
-
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(start = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(id = R.string.owner),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.width(75.dp)
-        )
-        Spacer(DoubleHorzSpacer)
-        NoteAuthorPicture(baseNote, nav, accountViewModel, Size25dp)
-        Spacer(DoubleHorzSpacer)
-        NoteUsernameDisplay(baseNote, remember { Modifier.weight(1f) })
-        TimeAgo(baseNote)
-        MoreOptionsButton(baseNote, accountViewModel)
-    }
-
-    var participantUsers by remember(baseNote) {
-        mutableStateOf<ImmutableList<Pair<Participant, User>>>(
-            persistentListOf()
-        )
-    }
-
-    LaunchedEffect(key1 = noteState) {
-        launch(Dispatchers.IO) {
-            val noteEvent = (noteState?.note?.event as? CommunityDefinitionEvent)
-            val newParticipantUsers = noteEvent?.moderators()?.mapNotNull { part ->
-                LocalCache.checkGetOrCreateUser(part.key)?.let { Pair(part, it) }
-            }?.toImmutableList()
-
-            if (newParticipantUsers != null && !equalImmutableLists(newParticipantUsers, participantUsers)) {
-                participantUsers = newParticipantUsers
-            }
-        }
-    }
-
-    participantUsers.forEach {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(start = 10.dp, top = 10.dp)
-                .clickable {
-                    nav("User/${it.second.pubkeyHex}")
-                },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            it.first.role?.let { it1 ->
-                Text(
-                    text = it1.capitalize(Locale.ROOT),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.width(75.dp)
-                )
-            }
-            Spacer(DoubleHorzSpacer)
-            ClickableUserPicture(it.second, Size25dp, accountViewModel)
-            Spacer(DoubleHorzSpacer)
-            UsernameDisplay(it.second, remember { Modifier.weight(1f) })
-        }
-    }
-}
-
-@Composable
-fun ShortCommunityHeader(baseNote: AddressableNote, expanded: MutableState<Boolean>, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    val noteState by baseNote.live().metadata.observeAsState()
-    val noteEvent = remember(noteState) { noteState?.note?.event as? CommunityDefinitionEvent } ?: return
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        noteEvent.image()?.let {
-            RobohashAsyncImageProxy(
-                robot = baseNote.idHex,
-                model = it,
-                contentDescription = stringResource(R.string.profile_image),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .width(Size35dp)
-                    .height(Size35dp)
-                    .clip(shape = CircleShape)
-            )
-        }
-
-        Column(
-            modifier = Modifier
-                .padding(start = 10.dp)
-                .height(Size35dp)
-                .weight(1f),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = remember(noteState) { noteEvent.dTag() },
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            val summary = remember(noteState) {
-                noteEvent.description()?.ifBlank { null }
-            }
-
-            if (summary != null && !expanded.value) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = summary,
-                        color = MaterialTheme.colors.placeholderText,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 12.sp
-                    )
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .height(Size35dp)
-                .padding(start = 5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ShortCommunityActionOptions(baseNote, accountViewModel, nav)
-        }
-    }
-}
-
-@Composable
-private fun ShortCommunityActionOptions(
-    note: AddressableNote,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    Spacer(modifier = StdHorzSpacer)
-    LikeReaction(baseNote = note, grayTint = MaterialTheme.colors.onSurface, accountViewModel = accountViewModel, nav)
-    Spacer(modifier = StdHorzSpacer)
-    ZapReaction(baseNote = note, grayTint = MaterialTheme.colors.onSurface, accountViewModel = accountViewModel)
-
-    WatchAddressableNoteFollows(note, accountViewModel) { isFollowing ->
-        if (!isFollowing) {
-            Spacer(modifier = StdHorzSpacer)
-            JoinCommunityButton(accountViewModel, note, nav)
-        }
-    }
-}
-
-@Composable
 fun WatchAddressableNoteFollows(note: AddressableNote, accountViewModel: AccountViewModel, onFollowChanges: @Composable (Boolean) -> Unit) {
     val showFollowingMark by accountViewModel.userFollows.map {
         it.user.latestContactList?.isTaggedAddressableNote(note.idHex) ?: false
@@ -760,19 +483,6 @@ fun WatchAddressableNoteFollows(note: AddressableNote, accountViewModel: Account
     )
 
     onFollowChanges(showFollowingMark)
-}
-
-@Composable
-private fun LongCommunityActionOptions(
-    note: AddressableNote,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    WatchAddressableNoteFollows(note, accountViewModel) { isFollowing ->
-        if (isFollowing) {
-            LeaveCommunityButton(accountViewModel, note, nav)
-        }
-    }
 }
 
 @Composable
@@ -1130,17 +840,6 @@ private fun RenderNoteRow(
             )
         }
 
-        is CommunityPostApprovalEvent -> {
-            RenderPostApproval(
-                baseNote,
-                makeItShort,
-                canPreview,
-                backgroundColor,
-                accountViewModel,
-                nav
-            )
-        }
-
         else -> {
             RenderTextEvent(
                 baseNote,
@@ -1163,8 +862,6 @@ fun routeFor(note: Note, loggedIn: User): String? {
         }
     } else if (noteEvent is PrivateDmEvent) {
         return "Room/${noteEvent.talkingWith(loggedIn.pubkeyHex)}"
-    } else if (noteEvent is CommunityDefinitionEvent) {
-        return "Community/${note.idHex}"
     } else {
         return "Note/${note.idHex}"
     }
@@ -1879,59 +1576,6 @@ fun RenderRepost(
 }
 
 @Composable
-fun RenderPostApproval(
-    note: Note,
-    makeItShort: Boolean,
-    canPreview: Boolean,
-    backgroundColor: MutableState<Color>,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    if (note.replyTo.isNullOrEmpty()) return
-
-    val noteEvent = note.event as? CommunityPostApprovalEvent ?: return
-
-    Column(Modifier.fillMaxWidth()) {
-        noteEvent.communities().forEach {
-            LoadAddressableNote(it) {
-                it?.let {
-                    NoteCompose(
-                        it,
-                        parentBackgroundColor = backgroundColor,
-                        accountViewModel = accountViewModel,
-                        nav = nav
-                    )
-                }
-            }
-        }
-
-        Text(
-            text = stringResource(id = R.string.community_approved_posts),
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp),
-            textAlign = TextAlign.Center
-        )
-
-        note.replyTo?.forEach {
-            NoteCompose(
-                it,
-                modifier = MaterialTheme.colors.replyModifier,
-                unPackReply = false,
-                makeItShort = true,
-                isQuotedNote = true,
-                parentBackgroundColor = backgroundColor,
-                accountViewModel = accountViewModel,
-                nav = nav
-            )
-        }
-    }
-}
-
-@Composable
 fun LoadAddressableNote(aTag: ATag, content: @Composable (AddressableNote?) -> Unit) {
     var note by remember(aTag) {
         mutableStateOf<AddressableNote?>(LocalCache.getAddressableNoteIfExists(aTag.toTag()))
@@ -2306,7 +1950,7 @@ private fun ReplyRow(
     }
 
     if (showReply) {
-        val replyingDirectlyTo = remember { note.replyTo?.lastOrNull { it.event?.kind() != CommunityDefinitionEvent.kind } }
+        val replyingDirectlyTo = remember { note.replyTo?.lastOrNull() }
         if (replyingDirectlyTo != null && unPackReply) {
             ReplyNoteComposition(replyingDirectlyTo, backgroundColor, accountViewModel, nav)
             Spacer(modifier = StdVertSpacer)
@@ -2413,12 +2057,6 @@ fun FirstUserInfoRow(
             }
         }
 
-        val isCommunityPost by remember(baseNote) {
-            derivedStateOf {
-                baseNote.event?.isTaggedAddressableKind(CommunityDefinitionEvent.kind) == true
-            }
-        }
-
         if (showAuthorPicture) {
             NoteAuthorPicture(baseNote, nav, accountViewModel, Size25dp)
             Spacer(HalfPadding)
@@ -2429,8 +2067,6 @@ fun FirstUserInfoRow(
 
         if (isRepost) {
             BoostedMark()
-        } else if (isCommunityPost) {
-            DisplayFollowingCommunityInPost(baseNote, accountViewModel, nav)
         } else {
             DisplayFollowingHashtagsInPost(baseNote, accountViewModel, nav)
         }
@@ -2774,19 +2410,6 @@ private fun LoadAndDisplayUser(
 }
 
 @Composable
-fun DisplayFollowingCommunityInPost(
-    baseNote: Note,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    Column(HalfStartPadding) {
-        Row(verticalAlignment = CenterVertically) {
-            DisplayCommunity(baseNote, nav)
-        }
-    }
-}
-
-@Composable
 fun DisplayFollowingHashtagsInPost(
     baseNote: Note,
     accountViewModel: AccountViewModel,
@@ -2834,37 +2457,6 @@ private fun DisplayTagList(firstTag: String, nav: (String) -> Unit) {
         ),
         maxLines = 1
     )
-}
-
-@Composable
-private fun DisplayCommunity(note: Note, nav: (String) -> Unit) {
-    val communityTag = remember(note) {
-        note.event?.getTagOfAddressableKind(CommunityDefinitionEvent.kind)
-    } ?: return
-
-    val displayTag = remember(note) { AnnotatedString(getCommunityShortName(communityTag)) }
-    val route = remember(note) { "Community/${communityTag.toTag()}" }
-
-    ClickableText(
-        text = displayTag,
-        onClick = { nav(route) },
-        style = LocalTextStyle.current.copy(
-            color = MaterialTheme.colors.primary.copy(
-                alpha = 0.52f
-            )
-        ),
-        maxLines = 1
-    )
-}
-
-private fun getCommunityShortName(communityTag: ATag): String {
-    val name = if (communityTag.dTag.length > 10) {
-        communityTag.dTag.take(10) + "..."
-    } else {
-        communityTag.dTag.take(10)
-    }
-
-    return "/n/$name"
 }
 
 @OptIn(ExperimentalLayoutApi::class)

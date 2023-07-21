@@ -33,7 +33,6 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -63,8 +62,6 @@ import com.vitorpamplona.amethyst.service.model.BadgeDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
 import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
 import com.vitorpamplona.amethyst.service.model.ClassifiedsEvent
-import com.vitorpamplona.amethyst.service.model.CommunityDefinitionEvent
-import com.vitorpamplona.amethyst.service.model.CommunityPostApprovalEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackEvent
 import com.vitorpamplona.amethyst.service.model.FileHeaderEvent
 import com.vitorpamplona.amethyst.service.model.FileStorageHeaderEvent
@@ -293,17 +290,7 @@ fun NoteMaster(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         NoteUsernameDisplay(baseNote, Modifier.weight(1f))
 
-                        val isCommunityPost by remember(baseNote) {
-                            derivedStateOf {
-                                baseNote.event?.isTaggedAddressableKind(CommunityDefinitionEvent.kind) == true
-                            }
-                        }
-
-                        if (isCommunityPost) {
-                            DisplayFollowingCommunityInPost(baseNote, accountViewModel, nav)
-                        } else {
-                            DisplayFollowingHashtagsInPost(baseNote, accountViewModel, nav)
-                        }
+                        DisplayFollowingHashtagsInPost(baseNote, accountViewModel, nav)
 
                         Text(
                             timeAgo(note.createdAt(), context = context),
@@ -377,15 +364,6 @@ fun NoteMaster(
                         DisplayPeopleList(baseNote, backgroundColor, accountViewModel, nav)
                     } else if (noteEvent is AudioTrackEvent) {
                         AudioTrackHeader(noteEvent, baseNote, accountViewModel, nav)
-                    } else if (noteEvent is CommunityPostApprovalEvent) {
-                        RenderPostApproval(
-                            baseNote,
-                            false,
-                            true,
-                            backgroundColor,
-                            accountViewModel,
-                            nav
-                        )
                     } else if (noteEvent is PinListEvent) {
                         RenderPinListEvent(
                             baseNote,

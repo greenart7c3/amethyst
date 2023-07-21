@@ -61,7 +61,6 @@ import com.vitorpamplona.amethyst.service.NostrAccountDataSource
 import com.vitorpamplona.amethyst.service.NostrChannelDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomListDataSource
-import com.vitorpamplona.amethyst.service.NostrCommunityDataSource
 import com.vitorpamplona.amethyst.service.NostrDiscoveryDataSource
 import com.vitorpamplona.amethyst.service.NostrHashtagDataSource
 import com.vitorpamplona.amethyst.service.NostrHomeDataSource
@@ -122,7 +121,6 @@ private fun RenderTopRouteBar(
     when (currentRoute) {
         Route.Channel.base -> NoTopBar()
         Route.Room.base -> NoTopBar()
-        Route.Community.base -> NoTopBar()
         Route.Hashtag.base -> NoTopBar()
         Route.Home.base -> HomeTopBar(followLists, scaffoldState, accountViewModel, nav)
         Route.Discover.base -> DiscoveryTopBar(followLists, scaffoldState, accountViewModel, nav)
@@ -470,7 +468,6 @@ fun debugState(context: Context) {
     NostrChannelDataSource.printCounter()
     NostrChatroomDataSource.printCounter()
     NostrChatroomListDataSource.printCounter()
-    NostrCommunityDataSource.printCounter()
     NostrDiscoveryDataSource.printCounter()
     NostrHashtagDataSource.printCounter()
     NostrHomeDataSource.printCounter()

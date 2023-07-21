@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.vitorpamplona.amethyst.model.Account
-import com.vitorpamplona.amethyst.model.AddressableNote
 import com.vitorpamplona.amethyst.model.Channel
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
@@ -22,9 +21,7 @@ import com.vitorpamplona.amethyst.ui.dal.ChannelFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.ChatroomFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.ChatroomListKnownFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.ChatroomListNewFeedFilter
-import com.vitorpamplona.amethyst.ui.dal.CommunityFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.DiscoverChatFeedFilter
-import com.vitorpamplona.amethyst.ui.dal.DiscoverCommunityFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.FeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HashtagFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HomeConversationsFeedFilter
@@ -56,14 +53,6 @@ class NostrChatroomFeedViewModel(val user: User, val account: Account) : FeedVie
     class Factory(val user: User, val account: Account) : ViewModelProvider.Factory {
         override fun <NostrChatRoomFeedViewModel : ViewModel> create(modelClass: Class<NostrChatRoomFeedViewModel>): NostrChatRoomFeedViewModel {
             return NostrChatroomFeedViewModel(user, account) as NostrChatRoomFeedViewModel
-        }
-    }
-}
-
-class NostrDiscoverCommunityFeedViewModel(val account: Account) : FeedViewModel(DiscoverCommunityFeedFilter(account)) {
-    class Factory(val account: Account) : ViewModelProvider.Factory {
-        override fun <NostrDiscoverCommunityFeedViewModel : ViewModel> create(modelClass: Class<NostrDiscoverCommunityFeedViewModel>): NostrDiscoverCommunityFeedViewModel {
-            return NostrDiscoverCommunityFeedViewModel(account) as NostrDiscoverCommunityFeedViewModel
         }
     }
 }
@@ -103,14 +92,6 @@ class NostrHashtagFeedViewModel(val hashtag: String, val account: Account) : Fee
     class Factory(val hashtag: String, val account: Account) : ViewModelProvider.Factory {
         override fun <NostrHashtagFeedViewModel : ViewModel> create(modelClass: Class<NostrHashtagFeedViewModel>): NostrHashtagFeedViewModel {
             return NostrHashtagFeedViewModel(hashtag, account) as NostrHashtagFeedViewModel
-        }
-    }
-}
-
-class NostrCommunityFeedViewModel(val note: AddressableNote, val account: Account) : FeedViewModel(CommunityFeedFilter(note, account)) {
-    class Factory(val note: AddressableNote, val account: Account) : ViewModelProvider.Factory {
-        override fun <NostrCommunityFeedViewModel : ViewModel> create(modelClass: Class<NostrCommunityFeedViewModel>): NostrCommunityFeedViewModel {
-            return NostrCommunityFeedViewModel(note, account) as NostrCommunityFeedViewModel
         }
     }
 }

@@ -283,8 +283,6 @@ open class Event(
             ChannelMetadataEvent.kind -> ChannelMetadataEvent(id, pubKey, createdAt, tags, content, sig)
             ChannelMuteUserEvent.kind -> ChannelMuteUserEvent(id, pubKey, createdAt, tags, content, sig)
             ClassifiedsEvent.kind -> ClassifiedsEvent(id, pubKey, createdAt, tags, content, sig)
-            CommunityDefinitionEvent.kind -> CommunityDefinitionEvent(id, pubKey, createdAt, tags, content, sig)
-            CommunityPostApprovalEvent.kind -> CommunityPostApprovalEvent(id, pubKey, createdAt, tags, content, sig)
             ContactListEvent.kind -> ContactListEvent(id, pubKey, createdAt, tags, content, sig)
             DeletionEvent.kind -> DeletionEvent(id, pubKey, createdAt, tags, content, sig)
             EmojiPackEvent.kind -> EmojiPackEvent(id, pubKey, createdAt, tags, content, sig)

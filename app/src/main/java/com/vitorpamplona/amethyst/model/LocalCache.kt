@@ -317,25 +317,6 @@ object LocalCache {
         refreshObservers(note)
     }
 
-    private fun consume(event: CommunityDefinitionEvent, relay: Relay?) {
-        val version = getOrCreateNote(event.id)
-        val note = getOrCreateAddressableNote(event.address())
-        val author = getOrCreateUser(event.pubKey)
-
-        if (version.event == null) {
-            version.loadEvent(event, author, emptyList())
-            version.moveAllReferencesTo(note)
-        }
-
-        if (note.event?.id() == event.id()) return
-
-        if (event.createdAt > (note.createdAt() ?: 0)) {
-            note.loadEvent(event, author, emptyList())
-
-            refreshObservers(note)
-        }
-    }
-
     fun consume(event: EmojiPackSelectionEvent) {
         val version = getOrCreateNote(event.id)
         val note = getOrCreateAddressableNote(event.address())
@@ -694,31 +675,6 @@ object LocalCache {
             event.taggedAddresses().mapNotNull { getOrCreateAddressableNote(it) }
 
         note.loadEvent(event, author, repliesTo)
-
-        // Counts the replies
-        repliesTo.forEach {
-            it.addBoost(note)
-        }
-
-        refreshObservers(note)
-    }
-
-    fun consume(event: CommunityPostApprovalEvent) {
-        val note = getOrCreateNote(event.id)
-
-        // Already processed this event.
-        if (note.event != null) return
-
-        // Log.d("TN", "New Boost (${notes.size},${users.size}) ${note.author?.toBestDisplayName()} ${formattedDateTime(event.createdAt)}")
-
-        val author = getOrCreateUser(event.pubKey)
-
-        val communities = event.communities()
-        val eventsApproved = event.approvedEvents().mapNotNull { checkGetOrCreateNote(it) }
-
-        val repliesTo = communities.map { getOrCreateAddressableNote(it) }
-
-        note.loadEvent(event, author, eventsApproved)
 
         // Counts the replies
         repliesTo.forEach {
@@ -1251,18 +1207,10 @@ object LocalCache {
                 is ChannelMetadataEvent -> consume(event)
                 is ChannelMuteUserEvent -> consume(event)
                 is ClassifiedsEvent -> consume(event)
-                is CommunityDefinitionEvent -> consume(event, relay)
-                is CommunityPostApprovalEvent -> {
-                    event.containedPost()?.let {
-                        verifyAndConsume(it, relay)
-                    }
-                    consume(event)
-                }
                 is ContactListEvent -> consume(event)
                 is DeletionEvent -> consume(event)
                 is EmojiPackEvent -> consume(event)
                 is EmojiPackSelectionEvent -> consume(event)
-
                 is FileHeaderEvent -> consume(event, relay)
                 is FileStorageEvent -> consume(event, relay)
                 is FileStorageHeaderEvent -> consume(event, relay)

@@ -36,7 +36,6 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.service.NostrDiscoveryDataSource
 import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
-import com.vitorpamplona.amethyst.service.model.CommunityDefinitionEvent
 import com.vitorpamplona.amethyst.ui.navigation.Route
 import com.vitorpamplona.amethyst.ui.note.ChannelCardCompose
 import com.vitorpamplona.amethyst.ui.screen.FeedEmpty
@@ -45,7 +44,6 @@ import com.vitorpamplona.amethyst.ui.screen.FeedState
 import com.vitorpamplona.amethyst.ui.screen.FeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.LoadingFeed
 import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverChatFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverCommunityFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.PagerStateKeys
 import com.vitorpamplona.amethyst.ui.screen.RefresheableView
 import com.vitorpamplona.amethyst.ui.screen.SaveableFeedState
@@ -59,7 +57,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DiscoverScreen(
-    discoveryCommunityFeedViewModel: NostrDiscoverCommunityFeedViewModel,
     discoveryChatFeedViewModel: NostrDiscoverChatFeedViewModel,
     accountViewModel: AccountViewModel,
     nav: (String) -> Unit
@@ -69,7 +66,6 @@ fun DiscoverScreen(
     val pagerState = rememberForeverPagerState(key = PagerStateKeys.DISCOVER_SCREEN)
 
     WatchAccountForDiscoveryScreen(
-        discoveryCommunityFeedViewModel = discoveryCommunityFeedViewModel,
         discoveryChatFeedViewModel = discoveryChatFeedViewModel,
         accountViewModel = accountViewModel
     )
@@ -88,10 +84,9 @@ fun DiscoverScreen(
         }
     }
 
-    val tabs by remember(discoveryCommunityFeedViewModel, discoveryChatFeedViewModel) {
+    val tabs by remember(discoveryChatFeedViewModel) {
         mutableStateOf(
             listOf(
-                TabItem(R.string.discover_community, discoveryCommunityFeedViewModel, Route.Discover.base + "Community", ScrollStateKeys.DISCOVER_COMMUNITY, CommunityDefinitionEvent.kind),
                 TabItem(R.string.discover_chat, discoveryChatFeedViewModel, Route.Discover.base + "Chats", ScrollStateKeys.DISCOVER_CHATS, ChannelCreateEvent.kind)
             ).toImmutableList()
         )
@@ -134,7 +129,7 @@ private fun DiscoverPages(
         }
     }
 
-    HorizontalPager(pageCount = 2, state = pagerState) { page ->
+    HorizontalPager(pageCount = 1, state = pagerState) { page ->
         RefresheableView(tabs[page].viewModel, true) {
             SaveableFeedState(tabs[page].viewModel, scrollStateKey = tabs[page].scrollStateKey) { listState ->
                 RenderDiscoverFeed(
@@ -198,7 +193,6 @@ private fun RenderDiscoverFeed(
 
 @Composable
 fun WatchAccountForDiscoveryScreen(
-    discoveryCommunityFeedViewModel: NostrDiscoverCommunityFeedViewModel,
     discoveryChatFeedViewModel: NostrDiscoverChatFeedViewModel,
     accountViewModel: AccountViewModel
 ) {
@@ -206,7 +200,6 @@ fun WatchAccountForDiscoveryScreen(
 
     LaunchedEffect(accountViewModel, accountState?.account?.defaultDiscoveryFollowList) {
         NostrDiscoveryDataSource.resetFilters()
-        discoveryCommunityFeedViewModel.checkKeysInvalidateDataAndSendToTop()
         discoveryChatFeedViewModel.checkKeysInvalidateDataAndSendToTop()
     }
 }

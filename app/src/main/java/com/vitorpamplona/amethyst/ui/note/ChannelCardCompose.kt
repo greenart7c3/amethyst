@@ -3,7 +3,6 @@ package com.vitorpamplona.amethyst.ui.note
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -42,12 +41,10 @@ import androidx.lifecycle.map
 import coil.compose.AsyncImage
 import com.vitorpamplona.amethyst.model.Channel
 import com.vitorpamplona.amethyst.model.KIND3_FOLLOWS
-import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.ParticipantListBuilder
 import com.vitorpamplona.amethyst.model.User
 import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
-import com.vitorpamplona.amethyst.service.model.CommunityDefinitionEvent
 import com.vitorpamplona.amethyst.ui.components.SensitivityWarning
 import com.vitorpamplona.amethyst.ui.screen.equalImmutableLists
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
@@ -357,128 +354,8 @@ private fun RenderNoteRow(
     nav: (String) -> Unit
 ) {
     when (remember { baseNote.event }) {
-        is CommunityDefinitionEvent -> {
-            RenderCommunitiesThumb(baseNote, accountViewModel, nav)
-        }
         is ChannelCreateEvent -> {
             RenderChannelThumb(baseNote, accountViewModel, nav)
-        }
-    }
-}
-
-@Composable
-fun RenderCommunitiesThumb(baseNote: Note, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    val noteEvent = baseNote.event as? CommunityDefinitionEvent ?: return
-
-    val eventUpdates by baseNote.live().metadata.observeAsState()
-
-    val name = remember(eventUpdates) { noteEvent.dTag() }
-    val description = remember(eventUpdates) { noteEvent.description() }
-    val cover by remember(eventUpdates) {
-        derivedStateOf {
-            noteEvent.image()?.ifBlank { null }
-        }
-    }
-    val moderators = remember(eventUpdates) { noteEvent.moderators() }
-
-    var participantUsers by remember {
-        mutableStateOf<ImmutableList<User>>(
-            persistentListOf()
-        )
-    }
-
-    LaunchedEffect(key1 = eventUpdates) {
-        launch(Dispatchers.IO) {
-            val hosts = moderators.mapNotNull { part ->
-                if (part.key != baseNote.author?.pubkeyHex) {
-                    LocalCache.checkGetOrCreateUser(part.key)
-                } else {
-                    null
-                }
-            }
-
-            val followingKeySet = accountViewModel.account.selectedUsersFollowList(accountViewModel.account.defaultDiscoveryFollowList)
-            val allParticipants = ParticipantListBuilder().followsThatParticipateOn(baseNote, followingKeySet).minus(hosts)
-
-            val newParticipantUsers = if (followingKeySet == null) {
-                val allFollows = accountViewModel.account.selectedUsersFollowList(KIND3_FOLLOWS)
-                val followingParticipants = ParticipantListBuilder().followsThatParticipateOn(baseNote, allFollows).minus(hosts)
-
-                (hosts + followingParticipants + (allParticipants - followingParticipants)).toImmutableList()
-            } else {
-                (hosts + allParticipants).toImmutableList()
-            }
-
-            if (!equalImmutableLists(newParticipantUsers, participantUsers)) {
-                participantUsers = newParticipantUsers
-            }
-        }
-    }
-
-    Row(Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth(0.3f)
-                .aspectRatio(ratio = 1f)
-        ) {
-            cover?.let {
-                Box(contentAlignment = BottomStart) {
-                    AsyncImage(
-                        model = it,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(QuoteBorder)
-                    )
-                }
-            } ?: run {
-                baseNote.author?.let {
-                    DisplayAuthorBanner(it)
-                }
-            }
-        }
-
-        Spacer(modifier = DoubleHorzSpacer)
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = name,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f)
-                )
-
-                Spacer(modifier = StdHorzSpacer)
-                LikeReaction(baseNote = baseNote, grayTint = MaterialTheme.colors.onSurface, accountViewModel = accountViewModel, nav)
-                Spacer(modifier = StdHorzSpacer)
-                ZapReaction(baseNote = baseNote, grayTint = MaterialTheme.colors.onSurface, accountViewModel = accountViewModel)
-            }
-
-            description?.let {
-                Spacer(modifier = StdVertSpacer)
-                Row() {
-                    Text(
-                        text = it,
-                        color = MaterialTheme.colors.placeholderText,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-
-            if (participantUsers.isNotEmpty()) {
-                Spacer(modifier = StdVertSpacer)
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    Gallery(participantUsers, accountViewModel)
-                }
-            }
         }
     }
 }

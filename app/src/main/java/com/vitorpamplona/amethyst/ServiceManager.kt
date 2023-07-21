@@ -15,7 +15,6 @@ import com.vitorpamplona.amethyst.service.NostrAccountDataSource
 import com.vitorpamplona.amethyst.service.NostrChannelDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomListDataSource
-import com.vitorpamplona.amethyst.service.NostrCommunityDataSource
 import com.vitorpamplona.amethyst.service.NostrDiscoveryDataSource
 import com.vitorpamplona.amethyst.service.NostrHashtagDataSource
 import com.vitorpamplona.amethyst.service.NostrHomeDataSource
@@ -95,7 +94,6 @@ object ServiceManager {
         NostrChatroomListDataSource.stop()
         NostrDiscoveryDataSource.stop()
 
-        NostrCommunityDataSource.stop()
         NostrHashtagDataSource.stop()
         NostrSearchEventOrUserDataSource.stop()
         NostrSingleChannelDataSource.stop()

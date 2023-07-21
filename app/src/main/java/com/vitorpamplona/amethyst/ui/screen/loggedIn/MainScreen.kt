@@ -30,7 +30,6 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.vitorpamplona.amethyst.ui.buttons.ChannelFabColumn
-import com.vitorpamplona.amethyst.ui.buttons.NewCommunityNoteButton
 import com.vitorpamplona.amethyst.ui.buttons.NewNoteButton
 import com.vitorpamplona.amethyst.ui.navigation.*
 import com.vitorpamplona.amethyst.ui.navigation.AccountSwitchBottomSheet
@@ -45,7 +44,6 @@ import com.vitorpamplona.amethyst.ui.screen.AccountStateViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListKnownFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListNewFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverChatFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverCommunityFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeRepliesFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NotificationViewModel
@@ -97,11 +95,6 @@ fun MainScreen(
         factory = NostrHomeRepliesFeedViewModel.Factory(accountViewModel.account)
     )
 
-    val discoveryCommunityFeedViewModel: NostrDiscoverCommunityFeedViewModel = viewModel(
-        key = accountViewModel.userProfile().pubkeyHex + "NostrDiscoveryCommunityFeedViewModel",
-        factory = NostrDiscoverCommunityFeedViewModel.Factory(accountViewModel.account)
-    )
-
     val discoveryChatFeedViewModel: NostrDiscoverChatFeedViewModel = viewModel(
         key = accountViewModel.userProfile().pubkeyHex + "NostrDiscoveryChatFeedViewModel",
         factory = NostrDiscoverChatFeedViewModel.Factory(accountViewModel.account)
@@ -143,7 +136,6 @@ fun MainScreen(
                         repliesFeedViewModel.sendToTop()
                     }
                     Route.Discover.base -> {
-                        discoveryCommunityFeedViewModel.sendToTop()
                         discoveryChatFeedViewModel.sendToTop()
                     }
                     Route.Notification.base -> {
@@ -192,7 +184,6 @@ fun MainScreen(
                     repliesFeedViewModel = repliesFeedViewModel,
                     knownFeedViewModel = knownFeedViewModel,
                     newFeedViewModel = newFeedViewModel,
-                    discoveryCommunityFeedViewModel = discoveryCommunityFeedViewModel,
                     discoveryChatFeedViewModel = discoveryChatFeedViewModel,
                     notifFeedViewModel = notifFeedViewModel,
                     userReactionsStatsModel = userReactionsStatsModel,
@@ -244,16 +235,5 @@ private fun WritePermissionButtons(
     when (currentRoute) {
         Route.Home.base -> NewNoteButton(accountViewModel, nav)
         Route.Message.base -> ChannelFabColumn(accountViewModel, nav)
-        Route.Community.base -> {
-            val communityId by remember(navEntryState.value) {
-                derivedStateOf {
-                    navEntryState.value?.arguments?.getString("id")
-                }
-            }
-
-            communityId?.let {
-                NewCommunityNoteButton(it, accountViewModel, nav)
-            }
-        }
     }
 }

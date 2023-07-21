@@ -34,7 +34,6 @@ import com.vitorpamplona.amethyst.service.connectivitystatus.ConnectivityStatus
 import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
 import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
-import com.vitorpamplona.amethyst.service.model.CommunityDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.service.nip19.Nip19
 import com.vitorpamplona.amethyst.service.notifications.PushNotificationUtils
@@ -262,12 +261,7 @@ fun uriToRoute(uri: String?): String? {
                     }
                 }
 
-                Nip19.Type.ADDRESS ->
-                    if (nip19.kind == CommunityDefinitionEvent.kind) {
-                        "Community/${nip19.hex}"
-                    } else {
-                        "Event/${nip19.hex}"
-                    }
+                Nip19.Type.ADDRESS -> "Event/${nip19.hex}"
                 else -> null
             }
         } ?: try {
