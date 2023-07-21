@@ -46,7 +46,6 @@ import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListKnownFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListNewFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverChatFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverCommunityFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverLiveFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeRepliesFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NotificationViewModel
@@ -98,11 +97,6 @@ fun MainScreen(
         factory = NostrHomeRepliesFeedViewModel.Factory(accountViewModel.account)
     )
 
-    val discoveryLiveFeedViewModel: NostrDiscoverLiveFeedViewModel = viewModel(
-        key = accountViewModel.userProfile().pubkeyHex + "NostrDiscoveryLiveFeedViewModel",
-        factory = NostrDiscoverLiveFeedViewModel.Factory(accountViewModel.account)
-    )
-
     val discoveryCommunityFeedViewModel: NostrDiscoverCommunityFeedViewModel = viewModel(
         key = accountViewModel.userProfile().pubkeyHex + "NostrDiscoveryCommunityFeedViewModel",
         factory = NostrDiscoverCommunityFeedViewModel.Factory(accountViewModel.account)
@@ -149,7 +143,6 @@ fun MainScreen(
                         repliesFeedViewModel.sendToTop()
                     }
                     Route.Discover.base -> {
-                        discoveryLiveFeedViewModel.sendToTop()
                         discoveryCommunityFeedViewModel.sendToTop()
                         discoveryChatFeedViewModel.sendToTop()
                     }
@@ -199,7 +192,6 @@ fun MainScreen(
                     repliesFeedViewModel = repliesFeedViewModel,
                     knownFeedViewModel = knownFeedViewModel,
                     newFeedViewModel = newFeedViewModel,
-                    discoveryLiveFeedViewModel = discoveryLiveFeedViewModel,
                     discoveryCommunityFeedViewModel = discoveryCommunityFeedViewModel,
                     discoveryChatFeedViewModel = discoveryChatFeedViewModel,
                     notifFeedViewModel = notifFeedViewModel,

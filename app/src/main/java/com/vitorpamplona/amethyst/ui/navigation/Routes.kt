@@ -16,11 +16,9 @@ import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.Account
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.service.checkNotInMainThread
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.ui.dal.AdditiveFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.ChatroomListKnownFeedFilter
-import com.vitorpamplona.amethyst.ui.dal.DiscoverLiveNowFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HomeNewThreadFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.NotificationFeedFilter
 import kotlinx.collections.immutable.ImmutableList
@@ -59,7 +57,7 @@ sealed class Route(
     object Discover : Route(
         route = "Discover",
         icon = R.drawable.ic_sensors,
-        hasNewItems = { accountViewModel, newNotes -> DiscoverLatestItem.hasNewItems(accountViewModel, newNotes) }
+        hasNewItems = { accountViewModel, newNotes -> false }
     )
 
     object Notification : Route(
@@ -194,29 +192,6 @@ object HomeLatestItem : LatestItem() {
         val newestItem = updateNewestItem(newNotes, account, HomeNewThreadFeedFilter(account))
 
         return (newestItem?.createdAt() ?: 0) > lastTime
-    }
-}
-
-object DiscoverLatestItem : LatestItem() {
-    fun hasNewItems(
-        account: Account,
-        newNotes: Set<Note>
-    ): Boolean {
-        checkNotInMainThread()
-
-        val lastTime = account.loadLastRead(Route.Discover.base + "Live")
-
-        val newestItem = updateNewestItem(newNotes, account, DiscoverLiveNowFeedFilter(account))
-
-        val noteEvent = newestItem?.event
-
-        val dateToUse = if (noteEvent is LiveActivitiesEvent) {
-            noteEvent.starts() ?: newestItem.createdAt()
-        } else {
-            newestItem?.createdAt()
-        }
-
-        return (dateToUse ?: 0) > lastTime
     }
 }
 

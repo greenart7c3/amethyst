@@ -13,10 +13,13 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vitorpamplona.amethyst.model.*
+import com.vitorpamplona.amethyst.model.Account
+import com.vitorpamplona.amethyst.model.HexKey
+import com.vitorpamplona.amethyst.model.LocalCache
+import com.vitorpamplona.amethyst.model.Note
+import com.vitorpamplona.amethyst.model.User
 import com.vitorpamplona.amethyst.service.FileHeader
 import com.vitorpamplona.amethyst.service.NostrSearchEventOrUserDataSource
-import com.vitorpamplona.amethyst.service.model.AddressableEvent
 import com.vitorpamplona.amethyst.service.model.BaseTextNoteEvent
 import com.vitorpamplona.amethyst.service.model.CommunityDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
@@ -161,11 +164,7 @@ open class NewPostViewModel() : ViewModel() {
                 relayList
             )
         } else if (originalNote?.channelHex() != null) {
-            if (originalNote is AddressableEvent && originalNote?.address() != null) {
-                account?.sendLiveMessage(tagger.message, originalNote?.address()!!, tagger.replyTos, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount)
-            } else {
-                account?.sendChannelMessage(tagger.message, tagger.channelHex!!, tagger.replyTos, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount)
-            }
+            account?.sendChannelMessage(tagger.message, tagger.channelHex!!, tagger.replyTos, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount)
         } else if (originalNote?.event is PrivateDmEvent) {
             account?.sendPrivateMessage(tagger.message, originalNote!!.author!!, originalNote!!, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount)
         } else {

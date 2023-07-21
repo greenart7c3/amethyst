@@ -103,12 +103,6 @@ object LocalCache {
                 PublicChatChannel(key)
             }
         }
-        val aTag = ATag.parse(key, null)
-        if (aTag != null) {
-            return getOrCreateChannel(aTag.toTag()) {
-                LiveActivitiesChannel(aTag)
-            }
-        }
         return null
     }
 
@@ -337,30 +331,6 @@ object LocalCache {
 
         if (event.createdAt > (note.createdAt() ?: 0)) {
             note.loadEvent(event, author, emptyList())
-
-            refreshObservers(note)
-        }
-    }
-
-    private fun consume(event: LiveActivitiesEvent, relay: Relay?) {
-        val version = getOrCreateNote(event.id)
-        val note = getOrCreateAddressableNote(event.address())
-        val author = getOrCreateUser(event.pubKey)
-
-        if (version.event == null) {
-            version.loadEvent(event, author, emptyList())
-            version.moveAllReferencesTo(note)
-        }
-
-        if (note.event?.id() == event.id()) return
-
-        if (event.createdAt > (note.createdAt() ?: 0)) {
-            note.loadEvent(event, author, emptyList())
-
-            val channel = getOrCreateChannel(note.idHex) {
-                LiveActivitiesChannel(note.address)
-            } as? LiveActivitiesChannel
-            channel?.updateChannelInfo(author, event, event.createdAt)
 
             refreshObservers(note)
         }
@@ -668,10 +638,6 @@ object LocalCache {
                     channels[it]?.removeNote(deleteNote)
                 }
 
-                (deleteNote.event as? LiveActivitiesChatMessageEvent)?.activity()?.let {
-                    channels[it.toTag()]?.removeNote(deleteNote)
-                }
-
                 if (deleteNote.event is PrivateDmEvent) {
                     val author = deleteNote.author
                     val recipient = (deleteNote.event as? PrivateDmEvent)?.verifiedRecipientPubKey()?.let { checkGetOrCreateUser(it) }
@@ -908,47 +874,6 @@ object LocalCache {
         note.loadEvent(event, author, replyTo)
 
         // Log.d("CM", "New Chat Note (${note.author?.toBestDisplayName()} ${note.event?.content()} ${formattedDateTime(event.createdAt)}")
-
-        // Counts the replies
-        replyTo.forEach {
-            it.addReply(note)
-        }
-
-        refreshObservers(note)
-    }
-
-    fun consume(event: LiveActivitiesChatMessageEvent, relay: Relay?) {
-        val activityId = event.activity() ?: return
-
-        val channel = getOrCreateChannel(activityId.toTag()) {
-            LiveActivitiesChannel(activityId)
-        }
-
-        val note = getOrCreateNote(event.id)
-        channel.addNote(note)
-
-        val author = getOrCreateUser(event.pubKey)
-
-        if (relay != null) {
-            author.addRelayBeingUsed(relay, event.createdAt)
-            note.addRelay(relay)
-        }
-
-        // Already processed this event.
-        if (note.event != null) return
-
-        if (antiSpam.isSpam(event, relay)) {
-            relay?.let {
-                it.spamCounter++
-            }
-            return
-        }
-
-        val replyTo = event.tagsWithoutCitations()
-            .filter { it != event.activity()?.toTag() }
-            .mapNotNull { checkGetOrCreateNote(it) }
-
-        note.loadEvent(event, author, replyTo)
 
         // Counts the replies
         replyTo.forEach {
@@ -1342,8 +1267,6 @@ object LocalCache {
                 is FileStorageEvent -> consume(event, relay)
                 is FileStorageHeaderEvent -> consume(event, relay)
                 is HighlightEvent -> consume(event, relay)
-                is LiveActivitiesEvent -> consume(event, relay)
-                is LiveActivitiesChatMessageEvent -> consume(event, relay)
                 is LnZapEvent -> {
                     event.zapRequest?.let {
                         verifyAndConsume(it, relay)

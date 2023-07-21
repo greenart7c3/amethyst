@@ -85,15 +85,11 @@ open class Note(val idHex: String) {
     fun channelHex(): HexKey? {
         return if (event is ChannelMessageEvent ||
             event is ChannelMetadataEvent ||
-            event is ChannelCreateEvent ||
-            event is LiveActivitiesChatMessageEvent ||
-            event is LiveActivitiesEvent
+            event is ChannelCreateEvent
         ) {
             (event as? ChannelMessageEvent)?.channel()
                 ?: (event as? ChannelMetadataEvent)?.channel()
                 ?: (event as? ChannelCreateEvent)?.id
-                ?: (event as? LiveActivitiesChatMessageEvent)?.activity()?.toTag()
-                ?: (event as? LiveActivitiesEvent)?.address()?.toTag()
         } else {
             null
         }
@@ -490,8 +486,7 @@ open class Note(val idHex: String) {
                 replyTo == null ||
                 replyTo?.size == 0
             ) &&
-            event !is ChannelMessageEvent &&
-            event !is LiveActivitiesChatMessageEvent
+            event !is ChannelMessageEvent
     }
 
     fun hasZapped(loggedIn: User): Boolean {

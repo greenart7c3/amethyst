@@ -2,10 +2,8 @@ package com.vitorpamplona.amethyst.service
 
 import com.vitorpamplona.amethyst.model.Account
 import com.vitorpamplona.amethyst.model.Channel
-import com.vitorpamplona.amethyst.model.LiveActivitiesChannel
 import com.vitorpamplona.amethyst.model.PublicChatChannel
 import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesChatMessageEvent
 import com.vitorpamplona.amethyst.service.relays.FeedType
 import com.vitorpamplona.amethyst.service.relays.JsonFilter
 import com.vitorpamplona.amethyst.service.relays.TypedFilter
@@ -40,18 +38,6 @@ object NostrChannelDataSource : NostrDataSource("ChatroomFeed") {
                     limit = 50
                 )
             )
-        } else if (channel is LiveActivitiesChannel) {
-            // Brings on messages by the user from all other relays.
-            // Since we ship with write to public, read from private only
-            // this guarantees that messages from the author do not disappear.
-            return TypedFilter(
-                types = setOf(FeedType.FOLLOWS, FeedType.PRIVATE_DMS, FeedType.GLOBAL, FeedType.SEARCH),
-                filter = JsonFilter(
-                    kinds = listOf(LiveActivitiesChatMessageEvent.kind),
-                    authors = listOf(myAccount.userProfile().pubkeyHex),
-                    limit = 50
-                )
-            )
         }
         return null
     }
@@ -63,15 +49,6 @@ object NostrChannelDataSource : NostrDataSource("ChatroomFeed") {
                 filter = JsonFilter(
                     kinds = listOf(ChannelMessageEvent.kind),
                     tags = mapOf("e" to listOfNotNull(channel?.idHex)),
-                    limit = 200
-                )
-            )
-        } else if (channel is LiveActivitiesChannel) {
-            return TypedFilter(
-                types = setOf(FeedType.PUBLIC_CHATS),
-                filter = JsonFilter(
-                    kinds = listOf(LiveActivitiesChatMessageEvent.kind),
-                    tags = mapOf("a" to listOfNotNull(channel?.idHex)),
                     limit = 200
                 )
             )

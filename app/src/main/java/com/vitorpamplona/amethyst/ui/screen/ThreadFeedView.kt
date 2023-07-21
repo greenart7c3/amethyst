@@ -364,7 +364,6 @@ fun NoteMaster(
                     if ((noteEvent is ChannelCreateEvent || noteEvent is ChannelMetadataEvent) && note.channelHex() != null) {
                         ChannelHeader(
                             channelHex = note.channelHex()!!,
-                            showVideo = true,
                             showBottomDiviser = false,
                             sendToChannel = true,
                             accountViewModel = accountViewModel,

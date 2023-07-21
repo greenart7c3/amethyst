@@ -82,7 +82,6 @@ import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.User
 import com.vitorpamplona.amethyst.model.UserMetadata
-import com.vitorpamplona.amethyst.service.OnlineChecker
 import com.vitorpamplona.amethyst.service.connectivitystatus.ConnectivityStatus
 import com.vitorpamplona.amethyst.service.model.ATag
 import com.vitorpamplona.amethyst.service.model.AppDefinitionEvent
@@ -103,10 +102,6 @@ import com.vitorpamplona.amethyst.service.model.FileHeaderEvent
 import com.vitorpamplona.amethyst.service.model.FileStorageHeaderEvent
 import com.vitorpamplona.amethyst.service.model.GenericRepostEvent
 import com.vitorpamplona.amethyst.service.model.HighlightEvent
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesChatMessageEvent
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent.Companion.STATUS_LIVE
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent.Companion.STATUS_PLANNED
 import com.vitorpamplona.amethyst.service.model.LongTextNoteEvent
 import com.vitorpamplona.amethyst.service.model.Participant
 import com.vitorpamplona.amethyst.service.model.PeopleListEvent
@@ -148,8 +143,6 @@ import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChannelHeader
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.JoinCommunityButton
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.LeaveCommunityButton
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.LiveFlag
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.ScheduledFlag
 import com.vitorpamplona.amethyst.ui.theme.ButtonBorder
 import com.vitorpamplona.amethyst.ui.theme.DividerThickness
 import com.vitorpamplona.amethyst.ui.theme.DoubleHorzSpacer
@@ -459,7 +452,6 @@ fun NormalNote(
     when (baseNote.event) {
         is ChannelCreateEvent, is ChannelMetadataEvent -> ChannelHeader(
             channelNote = baseNote,
-            showVideo = !makeItShort,
             showBottomDiviser = true,
             sendToChannel = true,
             accountViewModel = accountViewModel,
@@ -1097,10 +1089,6 @@ private fun RenderNoteRow(
             RenderEmojiPack(baseNote, true, backgroundColor, accountViewModel)
         }
 
-        is LiveActivitiesEvent -> {
-            RenderLiveActivityEvent(baseNote, accountViewModel, nav)
-        }
-
         is PrivateDmEvent -> {
             RenderPrivateMessage(
                 baseNote,
@@ -1170,10 +1158,6 @@ fun routeFor(note: Note, loggedIn: User): String? {
     val noteEvent = note.event
 
     if (noteEvent is ChannelMessageEvent || noteEvent is ChannelCreateEvent || noteEvent is ChannelMetadataEvent) {
-        note.channelHex()?.let {
-            return "Channel/$it"
-        }
-    } else if (noteEvent is LiveActivitiesEvent || noteEvent is LiveActivitiesChatMessageEvent) {
         note.channelHex()?.let {
             return "Channel/$it"
         }
@@ -2332,8 +2316,7 @@ private fun ReplyRow(
     } else {
         val showChannelReply by remember {
             derivedStateOf {
-                (noteEvent is ChannelMessageEvent && (note.replyTo != null || noteEvent.hasAnyTaggedUser())) ||
-                    (noteEvent is LiveActivitiesChatMessageEvent && (note.replyTo != null || noteEvent.hasAnyTaggedUser()))
+                (noteEvent is ChannelMessageEvent && (note.replyTo != null || noteEvent.hasAnyTaggedUser()))
             }
         }
 
@@ -2342,7 +2325,6 @@ private fun ReplyRow(
             channelHex?.let {
                 ChannelHeader(
                     channelHex = channelHex,
-                    showVideo = false,
                     showBottomDiviser = false,
                     sendToChannel = true,
                     modifier = remember { Modifier.padding(vertical = 5.dp) },
@@ -3311,159 +3293,6 @@ fun AudioTrackHeader(noteEvent: AudioTrackEvent, note: Note, accountViewModel: A
                             accountViewModel = accountViewModel
                         )
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun RenderLiveActivityEvent(baseNote: Note, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    Row(modifier = Modifier.padding(top = 5.dp)) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            RenderLiveActivityEventInner(baseNote = baseNote, accountViewModel, nav)
-        }
-    }
-}
-
-@Composable
-fun RenderLiveActivityEventInner(baseNote: Note, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    val noteEvent = baseNote.event as? LiveActivitiesEvent ?: return
-
-    val eventUpdates by baseNote.live().metadata.observeAsState()
-
-    val media = remember(eventUpdates) { noteEvent.streaming() }
-    val cover = remember(eventUpdates) { noteEvent.image() }
-    val subject = remember(eventUpdates) { noteEvent.title() }
-    val content = remember(eventUpdates) { noteEvent.summary() }
-    val participants = remember(eventUpdates) { noteEvent.participants() }
-    val status = remember(eventUpdates) { noteEvent.status() }
-    val starts = remember(eventUpdates) { noteEvent.starts() }
-
-    var isOnline by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = media) {
-        launch(Dispatchers.IO) {
-            isOnline = OnlineChecker.isOnline(media)
-        }
-    }
-
-    Row(
-        verticalAlignment = CenterVertically,
-        modifier = Modifier
-            .padding(vertical = 5.dp)
-            .fillMaxWidth()
-    ) {
-        subject?.let {
-            Text(
-                text = it,
-                fontWeight = FontWeight.Bold,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = StdHorzSpacer)
-
-        Crossfade(targetState = status) {
-            when (it) {
-                STATUS_LIVE -> {
-                    if (isOnline) {
-                        LiveFlag()
-                    }
-                }
-                STATUS_PLANNED -> {
-                    ScheduledFlag(starts)
-                }
-            }
-        }
-    }
-
-    var participantUsers by remember {
-        mutableStateOf<ImmutableList<Pair<Participant, User>>>(
-            persistentListOf()
-        )
-    }
-
-    LaunchedEffect(key1 = eventUpdates) {
-        launch(Dispatchers.IO) {
-            val newParticipantUsers = participants.mapNotNull { part ->
-                LocalCache.checkGetOrCreateUser(part.key)?.let { Pair(part, it) }
-            }.toImmutableList()
-
-            if (!equalImmutableLists(newParticipantUsers, participantUsers)) {
-                participantUsers = newParticipantUsers
-            }
-        }
-    }
-
-    participantUsers.forEach {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(top = 5.dp, start = 10.dp, end = 10.dp)
-                .clickable {
-                    nav("User/${it.second.pubkeyHex}")
-                }
-        ) {
-            ClickableUserPicture(it.second, 25.dp, accountViewModel)
-            Spacer(StdHorzSpacer)
-            UsernameDisplay(it.second, Modifier.weight(1f))
-            Spacer(StdHorzSpacer)
-            it.first.role?.let {
-                Text(
-                    text = it.capitalize(Locale.ROOT),
-                    color = MaterialTheme.colors.placeholderText,
-                    maxLines = 1
-                )
-            }
-        }
-    }
-
-    media?.let { media ->
-        if (status == STATUS_LIVE) {
-            if (isOnline) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    VideoView(
-                        videoUri = media,
-                        title = subject,
-                        artworkUri = cover,
-                        authorName = baseNote.author?.toBestDisplayName(),
-                        accountViewModel = accountViewModel,
-                        nostrUriCallback = "nostr:${baseNote.toNEvent()}"
-                    )
-                }
-            } else {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .height(100.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.live_stream_is_offline),
-                        color = MaterialTheme.colors.onBackground,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        } else if (status == "ended") {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(10.dp)
-                    .height(100.dp)
-            ) {
-                Text(
-                    text = stringResource(id = R.string.live_stream_has_ended),
-                    color = MaterialTheme.colors.onBackground,
-                    fontWeight = FontWeight.Bold
-                )
             }
         }
     }

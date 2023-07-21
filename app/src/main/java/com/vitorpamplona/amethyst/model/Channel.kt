@@ -4,7 +4,6 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.LiveData
 import com.vitorpamplona.amethyst.service.NostrSingleChannelDataSource
 import com.vitorpamplona.amethyst.service.checkNotInMainThread
-import com.vitorpamplona.amethyst.service.model.ATag
 import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
 import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent
 import com.vitorpamplona.amethyst.service.toNote
@@ -41,37 +40,6 @@ class PublicChatChannel(idHex: String) : Channel(idHex) {
 
     override fun anyNameStartsWith(prefix: String): Boolean {
         return listOfNotNull(info.name, info.about)
-            .filter { it.contains(prefix, true) }.isNotEmpty()
-    }
-}
-
-@Stable
-class LiveActivitiesChannel(val address: ATag) : Channel(address.toTag()) {
-    var info: LiveActivitiesEvent? = null
-
-    override fun idNote() = address.toNAddr()
-    override fun idDisplayNote() = idNote().toShortenHex()
-    fun address() = address
-
-    fun updateChannelInfo(creator: User, channelInfo: LiveActivitiesEvent, updatedAt: Long) {
-        this.info = channelInfo
-        super.updateChannelInfo(creator, updatedAt)
-    }
-
-    override fun toBestDisplayName(): String {
-        return info?.title() ?: super.toBestDisplayName()
-    }
-
-    override fun summary(): String? {
-        return info?.summary()
-    }
-
-    override fun profilePicture(): String? {
-        return info?.image()?.ifBlank { null }
-    }
-
-    override fun anyNameStartsWith(prefix: String): Boolean {
-        return listOfNotNull(info?.title(), info?.summary())
             .filter { it.contains(prefix, true) }.isNotEmpty()
     }
 }

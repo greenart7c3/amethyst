@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.BottomStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
-import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -38,7 +36,6 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
@@ -49,21 +46,11 @@ import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.ParticipantListBuilder
 import com.vitorpamplona.amethyst.model.User
-import com.vitorpamplona.amethyst.service.OnlineChecker
 import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
 import com.vitorpamplona.amethyst.service.model.CommunityDefinitionEvent
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent.Companion.STATUS_ENDED
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent.Companion.STATUS_LIVE
-import com.vitorpamplona.amethyst.service.model.LiveActivitiesEvent.Companion.STATUS_PLANNED
 import com.vitorpamplona.amethyst.ui.components.SensitivityWarning
 import com.vitorpamplona.amethyst.ui.screen.equalImmutableLists
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChannelHeader
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.EndedFlag
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.LiveFlag
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.OfflineFlag
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.ScheduledFlag
 import com.vitorpamplona.amethyst.ui.theme.DoubleHorzSpacer
 import com.vitorpamplona.amethyst.ui.theme.QuoteBorder
 import com.vitorpamplona.amethyst.ui.theme.Size35dp
@@ -370,163 +357,12 @@ private fun RenderNoteRow(
     nav: (String) -> Unit
 ) {
     when (remember { baseNote.event }) {
-        is LiveActivitiesEvent -> {
-            RenderLiveActivityThumb(baseNote, accountViewModel, nav)
-        }
         is CommunityDefinitionEvent -> {
             RenderCommunitiesThumb(baseNote, accountViewModel, nav)
         }
         is ChannelCreateEvent -> {
             RenderChannelThumb(baseNote, accountViewModel, nav)
         }
-    }
-}
-
-@Composable
-fun RenderLiveActivityThumb(
-    baseNote: Note,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    val noteEvent = baseNote.event as? LiveActivitiesEvent ?: return
-
-    val eventUpdates by baseNote.live().metadata.observeAsState()
-
-    val media = remember(eventUpdates) { noteEvent.streaming() }
-    val cover by remember(eventUpdates) {
-        derivedStateOf {
-            noteEvent.image()?.ifBlank { null }
-        }
-    }
-    val subject = remember(eventUpdates) { noteEvent.title()?.ifBlank { null } }
-    val content = remember(eventUpdates) { noteEvent.summary() }
-    val participants = remember(eventUpdates) { noteEvent.participants() }
-    val status = remember(eventUpdates) { noteEvent.status() }
-    val starts = remember(eventUpdates) { noteEvent.starts() }
-
-    var isOnline by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = media) {
-        launch(Dispatchers.IO) {
-            val newIsOnline = OnlineChecker.isOnline(media)
-            if (isOnline != newIsOnline) {
-                isOnline = newIsOnline
-            }
-        }
-    }
-
-    var participantUsers by remember {
-        mutableStateOf<ImmutableList<User>>(
-            persistentListOf()
-        )
-    }
-
-    LaunchedEffect(key1 = eventUpdates) {
-        launch(Dispatchers.IO) {
-            val hosts = participants.mapNotNull { part ->
-                if (part.key != baseNote.author?.pubkeyHex) {
-                    LocalCache.checkGetOrCreateUser(part.key)
-                } else {
-                    null
-                }
-            }
-
-            val hostsAuthor = hosts + (
-                baseNote.author?.let {
-                    listOf(it)
-                } ?: emptyList<User>()
-                )
-
-            val followingKeySet = accountViewModel.account.selectedUsersFollowList(accountViewModel.account.defaultDiscoveryFollowList)
-            val allParticipants = ParticipantListBuilder().followsThatParticipateOn(baseNote, followingKeySet).minus(hostsAuthor)
-
-            val newParticipantUsers = if (followingKeySet == null) {
-                val allFollows = accountViewModel.account.selectedUsersFollowList(KIND3_FOLLOWS)
-                val followingParticipants = ParticipantListBuilder().followsThatParticipateOn(baseNote, allFollows).minus(hostsAuthor)
-
-                (hosts + followingParticipants + (allParticipants - followingParticipants)).toImmutableList()
-            } else {
-                (hosts + allParticipants).toImmutableList()
-            }
-
-            if (!equalImmutableLists(newParticipantUsers, participantUsers)) {
-                participantUsers = newParticipantUsers
-            }
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Box(
-            contentAlignment = TopEnd,
-            modifier = Modifier
-                .aspectRatio(ratio = 16f / 9f)
-                .fillMaxWidth()
-        ) {
-            cover?.let {
-                AsyncImage(
-                    model = it,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(QuoteBorder)
-                )
-            } ?: run {
-                baseNote.author?.let {
-                    DisplayAuthorBanner(it)
-                }
-            }
-
-            Box(Modifier.padding(10.dp)) {
-                Crossfade(targetState = status) {
-                    when (it) {
-                        STATUS_LIVE -> {
-                            if (media.isNullOrBlank()) {
-                                LiveFlag()
-                            } else if (isOnline) {
-                                LiveFlag()
-                            } else {
-                                OfflineFlag()
-                            }
-                        }
-                        STATUS_ENDED -> {
-                            EndedFlag()
-                        }
-                        STATUS_PLANNED -> {
-                            ScheduledFlag(starts)
-                        }
-                        else -> {
-                            EndedFlag()
-                        }
-                    }
-                }
-            }
-
-            Box(
-                Modifier
-                    .padding(10.dp)
-                    .align(BottomStart)
-            ) {
-                if (participantUsers.isNotEmpty()) {
-                    Gallery(participantUsers, accountViewModel)
-                }
-            }
-        }
-
-        ChannelHeader(
-            channelHex = remember { baseNote.idHex },
-            showVideo = false,
-            showBottomDiviser = false,
-            showFlag = false,
-            sendToChannel = true,
-            modifier = remember {
-                Modifier.padding(start = 0.dp, end = 0.dp, top = 5.dp, bottom = 5.dp)
-            },
-            accountViewModel = accountViewModel,
-            nav = nav
-        )
     }
 }
 

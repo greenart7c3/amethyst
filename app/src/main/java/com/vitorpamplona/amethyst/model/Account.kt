@@ -759,27 +759,6 @@ class Account(
         LocalCache.consume(signedEvent, null)
     }
 
-    fun sendLiveMessage(message: String, toChannel: ATag, replyTo: List<Note>?, mentions: List<User>?, zapReceiver: String? = null, wantsToMarkAsSensitive: Boolean, zapRaiserAmount: Long? = null) {
-        if (!isWriteable()) return
-
-        // val repliesToHex = listOfNotNull(replyingTo?.idHex).ifEmpty { null }
-        val repliesToHex = replyTo?.map { it.idHex }
-        val mentionsHex = mentions?.map { it.pubkeyHex }
-
-        val signedEvent = LiveActivitiesChatMessageEvent.create(
-            message = message,
-            activity = toChannel,
-            replyTos = repliesToHex,
-            mentions = mentionsHex,
-            zapReceiver = zapReceiver,
-            markAsSensitive = wantsToMarkAsSensitive,
-            zapRaiserAmount = zapRaiserAmount,
-            privateKey = keyPair.privKey!!
-        )
-        Client.send(signedEvent)
-        LocalCache.consume(signedEvent, null)
-    }
-
     fun sendPrivateMessage(message: String, toUser: User, replyingTo: Note? = null, mentions: List<User>?, zapReceiver: String? = null, wantsToMarkAsSensitive: Boolean, zapRaiserAmount: Long? = null) {
         if (!isWriteable()) return
 

@@ -25,7 +25,6 @@ import com.vitorpamplona.amethyst.ui.dal.ChatroomListNewFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.CommunityFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.DiscoverChatFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.DiscoverCommunityFeedFilter
-import com.vitorpamplona.amethyst.ui.dal.DiscoverLiveFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.FeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HashtagFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HomeConversationsFeedFilter
@@ -57,14 +56,6 @@ class NostrChatroomFeedViewModel(val user: User, val account: Account) : FeedVie
     class Factory(val user: User, val account: Account) : ViewModelProvider.Factory {
         override fun <NostrChatRoomFeedViewModel : ViewModel> create(modelClass: Class<NostrChatRoomFeedViewModel>): NostrChatRoomFeedViewModel {
             return NostrChatroomFeedViewModel(user, account) as NostrChatRoomFeedViewModel
-        }
-    }
-}
-
-class NostrDiscoverLiveFeedViewModel(val account: Account) : FeedViewModel(DiscoverLiveFeedFilter(account)) {
-    class Factory(val account: Account) : ViewModelProvider.Factory {
-        override fun <NostrDiscoverLiveFeedViewModel : ViewModel> create(modelClass: Class<NostrDiscoverLiveFeedViewModel>): NostrDiscoverLiveFeedViewModel {
-            return NostrDiscoverLiveFeedViewModel(account) as NostrDiscoverLiveFeedViewModel
         }
     }
 }
