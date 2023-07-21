@@ -2,8 +2,6 @@ package com.vitorpamplona.amethyst.service
 
 import com.vitorpamplona.amethyst.model.Account
 import com.vitorpamplona.amethyst.service.model.*
-import com.vitorpamplona.amethyst.service.model.BadgeAwardEvent
-import com.vitorpamplona.amethyst.service.model.BadgeProfilesEvent
 import com.vitorpamplona.amethyst.service.model.BookmarkListEvent
 import com.vitorpamplona.amethyst.service.model.ContactListEvent
 import com.vitorpamplona.amethyst.service.model.LnZapEvent
@@ -50,7 +48,7 @@ object NostrAccountDataSource : NostrDataSource("AccountData") {
         return TypedFilter(
             types = COMMON_FEED_TYPES,
             filter = JsonFilter(
-                kinds = listOf(BadgeProfilesEvent.kind, EmojiPackSelectionEvent.kind),
+                kinds = listOf(EmojiPackSelectionEvent.kind),
                 authors = listOf(account.userProfile().pubkeyHex),
                 limit = 10
             )
@@ -100,8 +98,7 @@ object NostrAccountDataSource : NostrDataSource("AccountData") {
                 GenericRepostEvent.kind,
                 ReportEvent.kind,
                 LnZapEvent.kind,
-                LnZapPaymentResponseEvent.kind,
-                BadgeAwardEvent.kind
+                LnZapPaymentResponseEvent.kind
             ),
             tags = mapOf("p" to listOf(account.userProfile().pubkeyHex)),
             limit = 4000,

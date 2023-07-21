@@ -58,7 +58,6 @@ import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.service.model.AppDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.AudioTrackEvent
-import com.vitorpamplona.amethyst.service.model.BadgeDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.ClassifiedsEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackEvent
 import com.vitorpamplona.amethyst.service.model.FileHeaderEvent
@@ -328,9 +327,7 @@ fun NoteMaster(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            if (noteEvent is BadgeDefinitionEvent) {
-                BadgeDisplay(baseNote = note)
-            } else if (noteEvent is LongTextNoteEvent) {
+            if (noteEvent is LongTextNoteEvent) {
                 RenderLongFormHeaderForThread(noteEvent)
             } else if (noteEvent is ClassifiedsEvent) {
                 RenderClassifiedsReaderForThread(noteEvent, note, accountViewModel)

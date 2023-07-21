@@ -407,70 +407,6 @@ object LocalCache {
         }
     }
 
-    fun consume(event: BadgeDefinitionEvent) {
-        val version = getOrCreateNote(event.id)
-        val note = getOrCreateAddressableNote(event.address())
-        val author = getOrCreateUser(event.pubKey)
-
-        if (version.event == null) {
-            version.loadEvent(event, author, emptyList())
-            version.moveAllReferencesTo(note)
-        }
-
-        // Already processed this event.
-        if (note.event?.id() == event.id()) return
-
-        if (event.createdAt > (note.createdAt() ?: 0)) {
-            note.loadEvent(event, author, emptyList<Note>())
-
-            refreshObservers(note)
-        }
-    }
-
-    fun consume(event: BadgeProfilesEvent) {
-        val version = getOrCreateNote(event.id)
-        val note = getOrCreateAddressableNote(event.address())
-        val author = getOrCreateUser(event.pubKey)
-
-        if (version.event == null) {
-            version.loadEvent(event, author, emptyList())
-            version.moveAllReferencesTo(note)
-        }
-
-        // Already processed this event.
-        if (note.event?.id() == event.id()) return
-
-        val replyTo = event.badgeAwardEvents().mapNotNull { checkGetOrCreateNote(it) } +
-            event.badgeAwardDefinitions().mapNotNull { getOrCreateAddressableNote(it) }
-
-        if (event.createdAt > (note.createdAt() ?: 0)) {
-            note.loadEvent(event, author, replyTo)
-
-            refreshObservers(note)
-        }
-    }
-
-    fun consume(event: BadgeAwardEvent) {
-        val note = getOrCreateNote(event.id)
-
-        // Already processed this event.
-        if (note.event != null) return
-
-        // Log.d("TN", "New Boost (${notes.size},${users.size}) ${note.author?.toBestDisplayName()} ${formattedDateTime(event.createdAt)}")
-
-        val author = getOrCreateUser(event.pubKey)
-        val awardDefinition = event.awardDefinition().map { getOrCreateAddressableNote(it) }
-
-        note.loadEvent(event, author, awardDefinition)
-
-        // Replies of an Badge Definition are Award Events
-        awardDefinition.forEach {
-            it.addReply(note)
-        }
-
-        refreshObservers(note)
-    }
-
     private fun comsume(event: NNSEvent) {
         val version = getOrCreateNote(event.id)
         val note = getOrCreateAddressableNote(event.address())
@@ -1021,9 +957,6 @@ object LocalCache {
                 is AppDefinitionEvent -> consume(event)
                 is AppRecommendationEvent -> consume(event)
                 is AudioTrackEvent -> consume(event)
-                is BadgeAwardEvent -> consume(event)
-                is BadgeDefinitionEvent -> consume(event)
-                is BadgeProfilesEvent -> consume(event)
                 is BookmarkListEvent -> consume(event)
                 is ClassifiedsEvent -> consume(event)
                 is ContactListEvent -> consume(event)

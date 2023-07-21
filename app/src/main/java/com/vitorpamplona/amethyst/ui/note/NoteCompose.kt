@@ -1,6 +1,5 @@
 package com.vitorpamplona.amethyst.ui.note
 
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -33,8 +31,6 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,7 +50,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -67,13 +62,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
-import androidx.core.graphics.get
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
 import coil.compose.AsyncImage
 import coil.compose.AsyncImagePainter
-import coil.request.SuccessResult
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.AddressableNote
 import com.vitorpamplona.amethyst.model.Channel
@@ -86,8 +78,6 @@ import com.vitorpamplona.amethyst.service.connectivitystatus.ConnectivityStatus
 import com.vitorpamplona.amethyst.service.model.ATag
 import com.vitorpamplona.amethyst.service.model.AppDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.AudioTrackEvent
-import com.vitorpamplona.amethyst.service.model.BadgeAwardEvent
-import com.vitorpamplona.amethyst.service.model.BadgeDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.ClassifiedsEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackSelectionEvent
@@ -158,7 +148,6 @@ import com.vitorpamplona.amethyst.ui.theme.UserNameMaxRowHeight
 import com.vitorpamplona.amethyst.ui.theme.UserNameRowHeight
 import com.vitorpamplona.amethyst.ui.theme.WidthAuthorPictureModifier
 import com.vitorpamplona.amethyst.ui.theme.lessImportantLink
-import com.vitorpamplona.amethyst.ui.theme.mediumImportanceLink
 import com.vitorpamplona.amethyst.ui.theme.newItemBackgroundColor
 import com.vitorpamplona.amethyst.ui.theme.placeholderText
 import com.vitorpamplona.amethyst.ui.theme.replyBackground
@@ -437,7 +426,6 @@ fun NormalNote(
     nav: (String) -> Unit
 ) {
     when (baseNote.event) {
-        is BadgeDefinitionEvent -> BadgeDisplay(baseNote = baseNote)
         is FileHeaderEvent -> FileHeaderDisplay(baseNote, accountViewModel)
         is FileStorageHeaderEvent -> FileStorageHeaderDisplay(baseNote, accountViewModel)
         else ->
@@ -760,10 +748,6 @@ private fun RenderNoteRow(
 
         is LongTextNoteEvent -> {
             RenderLongFormContent(baseNote, accountViewModel, nav)
-        }
-
-        is BadgeAwardEvent -> {
-            RenderBadgeAward(baseNote, backgroundColor, accountViewModel, nav)
         }
 
         is PeopleListEvent -> {
@@ -1434,68 +1418,6 @@ fun DisplayPeopleList(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun RenderBadgeAward(
-    note: Note,
-    backgroundColor: MutableState<Color>,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    if (note.replyTo.isNullOrEmpty()) return
-
-    val noteEvent = note.event as? BadgeAwardEvent ?: return
-    var awardees by remember { mutableStateOf<List<User>>(listOf()) }
-
-    val account = accountViewModel.userProfile()
-
-    Text(text = stringResource(R.string.award_granted_to))
-
-    LaunchedEffect(key1 = note) {
-        launch(Dispatchers.IO) {
-            awardees = noteEvent.awardees().mapNotNull { hex ->
-                LocalCache.checkGetOrCreateUser(hex)
-            }.sortedBy { account.isFollowing(it) }.reversed()
-        }
-    }
-
-    FlowRow(modifier = Modifier.padding(top = 5.dp)) {
-        awardees.take(100).forEach { user ->
-            Row(
-                modifier = Modifier
-                    .size(size = Size35dp)
-                    .clickable {
-                        nav("User/${user.pubkeyHex}")
-                    },
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ClickableUserPicture(
-                    baseUser = user,
-                    accountViewModel = accountViewModel,
-                    size = Size35dp
-                )
-            }
-        }
-
-        if (awardees.size > 100) {
-            Text(" and ${awardees.size - 100} others", maxLines = 1)
-        }
-    }
-
-    note.replyTo?.firstOrNull()?.let {
-        NoteCompose(
-            it,
-            modifier = Modifier,
-            isBoostedNote = false,
-            isQuotedNote = true,
-            unPackReply = false,
-            parentBackgroundColor = backgroundColor,
-            accountViewModel = accountViewModel,
-            nav = nav
-        )
     }
 }
 
@@ -2481,60 +2403,6 @@ private fun RenderPledgeAmount(
         color = MaterialTheme.colors.placeholderText,
         maxLines = 1
     )
-}
-
-@Composable
-fun BadgeDisplay(baseNote: Note) {
-    val background = MaterialTheme.colors.background
-    val badgeData = baseNote.event as? BadgeDefinitionEvent ?: return
-
-    val image = remember { badgeData.thumb()?.ifBlank { null } ?: badgeData.image() }
-    val name = remember { badgeData.name() }
-    val description = remember { badgeData.description() }
-
-    var backgroundFromImage by remember { mutableStateOf(Pair(background, background)) }
-    var imageResult by remember { mutableStateOf<SuccessResult?>(null) }
-
-    LaunchedEffect(key1 = imageResult) {
-        launch(Dispatchers.IO) {
-            imageResult?.let {
-                val backgroundColor = it.drawable.toBitmap(200, 200).copy(Bitmap.Config.ARGB_8888, false).get(0, 199)
-                val colorFromImage = Color(backgroundColor)
-                val textBackground = if (colorFromImage.luminance() > 0.5) {
-                    lightColors().onBackground
-                } else {
-                    darkColors().onBackground
-                }
-
-                launch(Dispatchers.Main) {
-                    backgroundFromImage = Pair(colorFromImage, textBackground)
-                }
-            }
-        }
-    }
-
-    Row(
-        modifier = Modifier
-            .padding(10.dp)
-            .clip(shape = CutCornerShape(20, 20, 20, 20))
-            .border(
-                5.dp,
-                MaterialTheme.colors.mediumImportanceLink,
-                CutCornerShape(20)
-            )
-            .background(backgroundFromImage.first)
-    ) {
-        RenderBadge(
-            image,
-            name,
-            backgroundFromImage.second,
-            description
-        ) {
-            if (imageResult == null) {
-                imageResult = it.result
-            }
-        }
-    }
 }
 
 @Composable

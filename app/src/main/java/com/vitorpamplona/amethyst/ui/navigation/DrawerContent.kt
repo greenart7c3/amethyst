@@ -70,7 +70,6 @@ import com.vitorpamplona.amethyst.ui.screen.RelayPoolViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountBackupDialog
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ConnectOrbotDialog
-import com.vitorpamplona.amethyst.ui.theme.DoubleHorzSpacer
 import com.vitorpamplona.amethyst.ui.theme.Size16dp
 import com.vitorpamplona.amethyst.ui.theme.placeholderText
 import kotlinx.coroutines.CoroutineScope
@@ -234,17 +233,10 @@ fun ProfileContent(
 @Composable
 private fun FollowingAndFollowerCounts(baseAccountUser: User) {
     var followingCount by remember { mutableStateOf("--") }
-    var followerCount by remember { mutableStateOf("--") }
 
     WatchFollow(baseAccountUser = baseAccountUser) { newFollowing ->
         if (followingCount != newFollowing) {
             followingCount = newFollowing
-        }
-    }
-
-    WatchFollower(baseAccountUser = baseAccountUser) { newFollower ->
-        if (followerCount != newFollower) {
-            followerCount = newFollower
         }
     }
 
@@ -254,15 +246,6 @@ private fun FollowingAndFollowerCounts(baseAccountUser: User) {
     )
 
     Text(stringResource(R.string.following))
-
-    Spacer(modifier = DoubleHorzSpacer)
-
-    Text(
-        text = followerCount,
-        fontWeight = FontWeight.Bold
-    )
-
-    Text(stringResource(R.string.followers))
 }
 
 @Composable

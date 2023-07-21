@@ -14,7 +14,6 @@ import com.vitorpamplona.amethyst.ui.components.BundledUpdate
 import com.vitorpamplona.amethyst.ui.dal.FeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HiddenAccountsFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.SpammerAccountsFeedFilter
-import com.vitorpamplona.amethyst.ui.dal.UserProfileFollowersFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.UserProfileFollowsFeedFilter
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -30,14 +29,6 @@ class NostrUserProfileFollowsUserFeedViewModel(val user: User, val account: Acco
     class Factory(val user: User, val account: Account) : ViewModelProvider.Factory {
         override fun <NostrUserProfileFollowsUserFeedViewModel : ViewModel> create(modelClass: Class<NostrUserProfileFollowsUserFeedViewModel>): NostrUserProfileFollowsUserFeedViewModel {
             return NostrUserProfileFollowsUserFeedViewModel(user, account) as NostrUserProfileFollowsUserFeedViewModel
-        }
-    }
-}
-
-class NostrUserProfileFollowersUserFeedViewModel(val user: User, val account: Account) : UserFeedViewModel(UserProfileFollowersFeedFilter(user, account)) {
-    class Factory(val user: User, val account: Account) : ViewModelProvider.Factory {
-        override fun <NostrUserProfileFollowersUserFeedViewModel : ViewModel> create(modelClass: Class<NostrUserProfileFollowersUserFeedViewModel>): NostrUserProfileFollowersUserFeedViewModel {
-            return NostrUserProfileFollowersUserFeedViewModel(user, account) as NostrUserProfileFollowersUserFeedViewModel
         }
     }
 }

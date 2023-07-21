@@ -41,7 +41,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,10 +57,7 @@ import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.User
 import com.vitorpamplona.amethyst.service.NostrUserProfileDataSource
-import com.vitorpamplona.amethyst.service.model.ATag
 import com.vitorpamplona.amethyst.service.model.AppDefinitionEvent
-import com.vitorpamplona.amethyst.service.model.BadgeDefinitionEvent
-import com.vitorpamplona.amethyst.service.model.BadgeProfilesEvent
 import com.vitorpamplona.amethyst.service.model.IdentityClaim
 import com.vitorpamplona.amethyst.service.model.PayInvoiceErrorResponse
 import com.vitorpamplona.amethyst.service.model.PayInvoiceSuccessResponse
@@ -72,8 +68,6 @@ import com.vitorpamplona.amethyst.ui.actions.toImmutableListOfLists
 import com.vitorpamplona.amethyst.ui.components.CreateTextWithEmoji
 import com.vitorpamplona.amethyst.ui.components.DisplayNip05ProfileStatus
 import com.vitorpamplona.amethyst.ui.components.InvoiceRequest
-import com.vitorpamplona.amethyst.ui.components.RobohashAsyncImage
-import com.vitorpamplona.amethyst.ui.components.RobohashFallbackAsyncImage
 import com.vitorpamplona.amethyst.ui.components.TranslatableRichTextViewer
 import com.vitorpamplona.amethyst.ui.components.ZoomableImageDialog
 import com.vitorpamplona.amethyst.ui.components.figureOutMimeType
@@ -81,17 +75,13 @@ import com.vitorpamplona.amethyst.ui.dal.UserProfileReportsFeedFilter
 import com.vitorpamplona.amethyst.ui.navigation.ShowQRDialog
 import com.vitorpamplona.amethyst.ui.note.ClickableUserPicture
 import com.vitorpamplona.amethyst.ui.note.LightningAddressIcon
-import com.vitorpamplona.amethyst.ui.note.LoadAddressableNote
 import com.vitorpamplona.amethyst.ui.screen.FeedState
-import com.vitorpamplona.amethyst.ui.screen.LnZapFeedView
 import com.vitorpamplona.amethyst.ui.screen.NostrUserAppRecommendationsFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrUserProfileBookmarksFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrUserProfileConversationsFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrUserProfileFollowersUserFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrUserProfileFollowsUserFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrUserProfileNewThreadsFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrUserProfileReportFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrUserProfileZapsFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.RefresheableFeedView
 import com.vitorpamplona.amethyst.ui.screen.RefreshingFeedUserFeedView
 import com.vitorpamplona.amethyst.ui.screen.RelayFeedView
@@ -102,11 +92,8 @@ import com.vitorpamplona.amethyst.ui.theme.ButtonBorder
 import com.vitorpamplona.amethyst.ui.theme.Size16Modifier
 import com.vitorpamplona.amethyst.ui.theme.Size35dp
 import com.vitorpamplona.amethyst.ui.theme.placeholderText
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.math.BigDecimal
 
 @Composable
 fun ProfileScreen(userId: String?, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
@@ -145,24 +132,9 @@ fun PrepareViewModels(baseUser: User, accountViewModel: AccountViewModel, nav: (
         )
     )
 
-    val followersFeedViewModel: NostrUserProfileFollowersUserFeedViewModel = viewModel(
-        key = baseUser.pubkeyHex + "UserProfileFollowersUserFeedViewModel",
-        factory = NostrUserProfileFollowersUserFeedViewModel.Factory(
-            baseUser,
-            accountViewModel.account
-        )
-    )
-
     val appRecommendations: NostrUserAppRecommendationsFeedViewModel = viewModel(
         key = baseUser.pubkeyHex + "UserAppRecommendationsFeedViewModel",
         factory = NostrUserAppRecommendationsFeedViewModel.Factory(
-            baseUser
-        )
-    )
-
-    val zapFeedViewModel: NostrUserProfileZapsFeedViewModel = viewModel(
-        key = baseUser.pubkeyHex + "UserProfileZapsFeedViewModel",
-        factory = NostrUserProfileZapsFeedViewModel.Factory(
             baseUser
         )
     )
@@ -203,9 +175,7 @@ fun PrepareViewModels(baseUser: User, accountViewModel: AccountViewModel, nav: (
         threadsViewModel,
         repliesViewModel,
         followsFeedViewModel,
-        followersFeedViewModel,
         appRecommendations,
-        zapFeedViewModel,
         bookmarksFeedViewModel,
         reportsFeedViewModel,
         accountViewModel = accountViewModel,
@@ -219,9 +189,7 @@ fun ProfileScreen(
     threadsViewModel: NostrUserProfileNewThreadsFeedViewModel,
     repliesViewModel: NostrUserProfileConversationsFeedViewModel,
     followsFeedViewModel: NostrUserProfileFollowsUserFeedViewModel,
-    followersFeedViewModel: NostrUserProfileFollowersUserFeedViewModel,
     appRecommendations: NostrUserAppRecommendationsFeedViewModel,
-    zapFeedViewModel: NostrUserProfileZapsFeedViewModel,
     bookmarksFeedViewModel: NostrUserProfileBookmarksFeedViewModel,
     reportsFeedViewModel: NostrUserProfileReportFeedViewModel,
     accountViewModel: AccountViewModel,
@@ -264,8 +232,6 @@ fun ProfileScreen(
         repliesViewModel,
         appRecommendations,
         followsFeedViewModel,
-        followersFeedViewModel,
-        zapFeedViewModel,
         bookmarksFeedViewModel,
         reportsFeedViewModel,
         accountViewModel,
@@ -281,8 +247,6 @@ private fun RenderSurface(
     repliesViewModel: NostrUserProfileConversationsFeedViewModel,
     appRecommendations: NostrUserAppRecommendationsFeedViewModel,
     followsFeedViewModel: NostrUserProfileFollowsUserFeedViewModel,
-    followersFeedViewModel: NostrUserProfileFollowersUserFeedViewModel,
-    zapFeedViewModel: NostrUserProfileZapsFeedViewModel,
     bookmarksFeedViewModel: NostrUserProfileBookmarksFeedViewModel,
     reportsFeedViewModel: NostrUserProfileReportFeedViewModel,
     accountViewModel: AccountViewModel,
@@ -348,8 +312,6 @@ private fun RenderSurface(
                     repliesViewModel,
                     appRecommendations,
                     followsFeedViewModel,
-                    followersFeedViewModel,
-                    zapFeedViewModel,
                     bookmarksFeedViewModel,
                     reportsFeedViewModel,
                     accountViewModel,
@@ -371,8 +333,6 @@ private fun RenderScreen(
     repliesViewModel: NostrUserProfileConversationsFeedViewModel,
     appRecommendations: NostrUserAppRecommendationsFeedViewModel,
     followsFeedViewModel: NostrUserProfileFollowsUserFeedViewModel,
-    followersFeedViewModel: NostrUserProfileFollowersUserFeedViewModel,
-    zapFeedViewModel: NostrUserProfileZapsFeedViewModel,
     bookmarksFeedViewModel: NostrUserProfileBookmarksFeedViewModel,
     reportsFeedViewModel: NostrUserProfileReportFeedViewModel,
     accountViewModel: AccountViewModel,
@@ -389,7 +349,7 @@ private fun RenderScreen(
             CreateAndRenderTabs(baseUser, pagerState)
         }
         HorizontalPager(
-            pageCount = 9,
+            pageCount = 7,
             state = pagerState,
             modifier = pagerModifier
         ) { page ->
@@ -399,8 +359,6 @@ private fun RenderScreen(
                 threadsViewModel,
                 repliesViewModel,
                 followsFeedViewModel,
-                followersFeedViewModel,
-                zapFeedViewModel,
                 bookmarksFeedViewModel,
                 reportsFeedViewModel,
                 accountViewModel,
@@ -417,8 +375,6 @@ private fun CreateAndRenderPages(
     threadsViewModel: NostrUserProfileNewThreadsFeedViewModel,
     repliesViewModel: NostrUserProfileConversationsFeedViewModel,
     followsFeedViewModel: NostrUserProfileFollowsUserFeedViewModel,
-    followersFeedViewModel: NostrUserProfileFollowersUserFeedViewModel,
-    zapFeedViewModel: NostrUserProfileZapsFeedViewModel,
     bookmarksFeedViewModel: NostrUserProfileBookmarksFeedViewModel,
     reportsFeedViewModel: NostrUserProfileReportFeedViewModel,
     accountViewModel: AccountViewModel,
@@ -428,12 +384,10 @@ private fun CreateAndRenderPages(
         0 -> TabNotesNewThreads(threadsViewModel, accountViewModel, nav)
         1 -> TabNotesConversations(repliesViewModel, accountViewModel, nav)
         2 -> TabFollows(baseUser, followsFeedViewModel, accountViewModel, nav)
-        3 -> TabFollowers(baseUser, followersFeedViewModel, accountViewModel, nav)
-        4 -> TabReceivedZaps(baseUser, zapFeedViewModel, accountViewModel, nav)
-        5 -> TabBookmarks(bookmarksFeedViewModel, accountViewModel, nav)
-        6 -> TabFollowedTags(baseUser, accountViewModel, nav)
-        7 -> TabReports(baseUser, reportsFeedViewModel, accountViewModel, nav)
-        8 -> TabRelays(baseUser, accountViewModel, nav)
+        3 -> TabBookmarks(bookmarksFeedViewModel, accountViewModel, nav)
+        4 -> TabFollowedTags(baseUser, accountViewModel, nav)
+        5 -> TabReports(baseUser, reportsFeedViewModel, accountViewModel, nav)
+        6 -> TabRelays(baseUser, accountViewModel, nav)
     }
 }
 
@@ -449,8 +403,6 @@ private fun CreateAndRenderTabs(
         { Text(text = stringResource(R.string.notes)) },
         { Text(text = stringResource(R.string.replies)) },
         { FollowTabHeader(baseUser) },
-        { FollowersTabHeader(baseUser) },
-        { ZapTabHeader(baseUser) },
         { BookmarkTabHeader(baseUser) },
         { FollowedTagsTabHeader(baseUser) },
         { ReportsTabHeader(baseUser) },
@@ -535,43 +487,6 @@ private fun BookmarkTabHeader(baseUser: User) {
     }
 
     Text(text = "$userBookmarks ${stringResource(R.string.bookmarks)}")
-}
-
-@Composable
-private fun ZapTabHeader(baseUser: User) {
-    val userState by baseUser.live().zaps.observeAsState()
-    var zapAmount by remember { mutableStateOf<BigDecimal?>(null) }
-
-    LaunchedEffect(key1 = userState) {
-        launch(Dispatchers.Default) {
-            val tempAmount = baseUser.zappedAmount()
-            if (zapAmount != tempAmount) {
-                zapAmount = tempAmount
-            }
-        }
-    }
-
-    Text(text = "${showAmountAxis(zapAmount)} ${stringResource(id = R.string.zaps)}")
-}
-
-@Composable
-private fun FollowersTabHeader(baseUser: User) {
-    val userState by baseUser.live().followers.observeAsState()
-    var followerCount by remember { mutableStateOf("--") }
-
-    val text = stringResource(R.string.followers)
-
-    LaunchedEffect(key1 = userState) {
-        launch(Dispatchers.IO) {
-            val newFollower = (userState?.user?.transientFollowerCount()?.toString() ?: "--") + " " + text
-
-            if (followerCount != newFollower) {
-                followerCount = newFollower
-            }
-        }
-    }
-
-    Text(text = followerCount)
 }
 
 @Composable
@@ -900,8 +815,6 @@ private fun DrawAdditionalInfo(
         }
     }
 
-    DisplayBadges(baseUser, nav)
-
     DisplayNip05ProfileStatus(user)
 
     val website = user.info?.website
@@ -1122,166 +1035,6 @@ private fun WatchApp(baseApp: Note, nav: (String) -> Unit) {
     }
 }
 
-@Composable
-private fun DisplayBadges(
-    baseUser: User,
-    nav: (String) -> Unit
-) {
-    LoadAddressableNote(
-        aTag = ATag(
-            BadgeProfilesEvent.kind,
-            baseUser.pubkeyHex,
-            BadgeProfilesEvent.standardDTAg,
-            null
-        )
-    ) {
-        if (it != null) {
-            val badgeList by it.live().metadata.map {
-                (it.note.event as? BadgeProfilesEvent)?.badgeAwardEvents()?.toImmutableList()
-            }.distinctUntilChanged().observeAsState()
-
-            badgeList?.let { list ->
-                RenderBadgeList(list, nav)
-            }
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalLayoutApi::class)
-private fun RenderBadgeList(
-    list: ImmutableList<String>,
-    nav: (String) -> Unit
-) {
-    FlowRow(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(vertical = 5.dp)
-    ) {
-        list.forEach { badgeAwardEvent ->
-            LoadAndRenderBadge(badgeAwardEvent, nav)
-        }
-    }
-}
-
-@Composable
-private fun LoadAndRenderBadge(badgeAwardEventHex: String, nav: (String) -> Unit) {
-    var baseNote by remember {
-        mutableStateOf<Note?>(LocalCache.getNoteIfExists(badgeAwardEventHex))
-    }
-
-    LaunchedEffect(key1 = badgeAwardEventHex) {
-        if (baseNote == null) {
-            launch(Dispatchers.IO) {
-                baseNote = LocalCache.checkGetOrCreateNote(badgeAwardEventHex)
-            }
-        }
-    }
-
-    baseNote?.let {
-        ObserveAndRenderBadge(it, nav)
-    }
-}
-
-@Composable
-private fun ObserveAndRenderBadge(
-    it: Note,
-    nav: (String) -> Unit
-) {
-    val badgeAwardState by it.live().metadata.observeAsState()
-    val baseBadgeDefinition by remember(badgeAwardState) {
-        derivedStateOf {
-            badgeAwardState?.note?.replyTo?.firstOrNull()
-        }
-    }
-
-    baseBadgeDefinition?.let {
-        BadgeThumb(it, nav, Size35dp)
-    }
-}
-
-@Composable
-fun BadgeThumb(
-    note: Note,
-    nav: (String) -> Unit,
-    size: Dp,
-    pictureModifier: Modifier = Modifier
-) {
-    BadgeThumb(note, size, pictureModifier) {
-        nav("Note/${note.idHex}")
-    }
-}
-
-@Composable
-fun BadgeThumb(
-    baseNote: Note,
-    size: Dp,
-    pictureModifier: Modifier = Modifier,
-    onClick: ((String) -> Unit)? = null
-) {
-    Box(
-        remember {
-            Modifier
-                .width(size)
-                .height(size)
-        }
-    ) {
-        WatchAndRenderBadgeImage(baseNote, size, pictureModifier, onClick)
-    }
-}
-
-@Composable
-private fun WatchAndRenderBadgeImage(
-    baseNote: Note,
-    size: Dp,
-    pictureModifier: Modifier,
-    onClick: ((String) -> Unit)?
-) {
-    val noteState by baseNote.live().metadata.observeAsState()
-    val eventId = remember(noteState) { noteState?.note?.idHex } ?: return
-    val image by remember(noteState) {
-        derivedStateOf {
-            val event = noteState?.note?.event as? BadgeDefinitionEvent
-            event?.thumb()?.ifBlank { null } ?: event?.image()?.ifBlank { null }
-        }
-    }
-
-    val bgColor = MaterialTheme.colors.background
-
-    if (image == null) {
-        RobohashAsyncImage(
-            robot = "authornotfound",
-            contentDescription = stringResource(R.string.unknown_author),
-            modifier = remember {
-                pictureModifier
-                    .width(size)
-                    .height(size)
-                    .background(bgColor)
-            }
-        )
-    } else {
-        RobohashFallbackAsyncImage(
-            robot = eventId,
-            model = image!!,
-            contentDescription = stringResource(id = R.string.profile_image),
-            modifier = remember {
-                pictureModifier
-                    .width(size)
-                    .height(size)
-                    .clip(shape = CircleShape)
-                    .background(bgColor)
-                    .run {
-                        if (onClick != null) {
-                            this.clickable(onClick = { onClick(eventId) })
-                        } else {
-                            this
-                        }
-                    }
-            }
-
-        )
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DrawBanner(baseUser: User, accountViewModel: AccountViewModel) {
@@ -1418,57 +1171,11 @@ fun TabFollows(baseUser: User, feedViewModel: UserFeedViewModel, accountViewMode
 }
 
 @Composable
-fun TabFollowers(baseUser: User, feedViewModel: UserFeedViewModel, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    WatchFollowerChanges(baseUser, feedViewModel)
-
-    Column(Modifier.fillMaxHeight()) {
-        Column() {
-            RefreshingFeedUserFeedView(feedViewModel, accountViewModel, nav, enablePullRefresh = false)
-        }
-    }
-}
-
-@Composable
 private fun WatchFollowChanges(
     baseUser: User,
     feedViewModel: UserFeedViewModel
 ) {
     val userState by baseUser.live().follows.observeAsState()
-
-    LaunchedEffect(userState) {
-        feedViewModel.invalidateData()
-    }
-}
-
-@Composable
-private fun WatchFollowerChanges(
-    baseUser: User,
-    feedViewModel: UserFeedViewModel
-) {
-    val userState by baseUser.live().followers.observeAsState()
-
-    LaunchedEffect(userState) {
-        feedViewModel.invalidateData()
-    }
-}
-
-@Composable
-fun TabReceivedZaps(baseUser: User, zapFeedViewModel: NostrUserProfileZapsFeedViewModel, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    WatchZapsAndUpdateFeed(baseUser, zapFeedViewModel)
-
-    Column(Modifier.fillMaxHeight()) {
-        Column() {
-            LnZapFeedView(zapFeedViewModel, accountViewModel, nav)
-        }
-    }
-}
-
-@Composable
-private fun WatchZapsAndUpdateFeed(
-    baseUser: User,
-    feedViewModel: NostrUserProfileZapsFeedViewModel
-) {
-    val userState by baseUser.live().zaps.observeAsState()
 
     LaunchedEffect(userState) {
         feedViewModel.invalidateData()
@@ -1646,7 +1353,6 @@ fun UserProfileDropDownMenu(user: User, popupExpanded: Boolean, onDismiss: () ->
         val clipboardManager = LocalClipboardManager.current
         val accountState by accountViewModel.accountLiveData.observeAsState()
         val account = accountState?.account!!
-        val blockList by accountViewModel.account.getBlockListNote().live().metadata.observeAsState()
 
         val scope = rememberCoroutineScope()
 

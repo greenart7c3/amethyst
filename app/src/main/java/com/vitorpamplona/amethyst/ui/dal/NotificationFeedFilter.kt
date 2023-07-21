@@ -34,9 +34,7 @@ class NotificationFeedFilter(val account: Account) : AdditiveFeedFilter<Note>() 
         val loggedInUserHex = loggedInUser.pubkeyHex
 
         return collection.filter {
-                it.event !is LnZapRequestEvent &&
-                it.event !is BadgeDefinitionEvent &&
-                it.event !is BadgeProfilesEvent &&
+            it.event !is LnZapRequestEvent &&
                 it.author !== loggedInUser &&
                 (isGlobal || it.author?.pubkeyHex in followingKeySet) &&
                 it.event?.isTaggedUser(loggedInUserHex) ?: false &&

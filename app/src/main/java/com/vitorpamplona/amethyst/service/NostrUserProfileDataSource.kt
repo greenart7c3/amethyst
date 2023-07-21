@@ -65,27 +65,6 @@ object NostrUserProfileDataSource : NostrDataSource("UserProfileFeed") {
         )
     }
 
-    fun createFollowersFilter() = user?.let {
-        TypedFilter(
-            types = COMMON_FEED_TYPES,
-            filter = JsonFilter(
-                kinds = listOf(ContactListEvent.kind),
-                tags = mapOf("p" to listOf(it.pubkeyHex))
-            )
-        )
-    }
-
-    fun createAcceptedAwardsFilter() = user?.let {
-        TypedFilter(
-            types = COMMON_FEED_TYPES,
-            filter = JsonFilter(
-                kinds = listOf(BadgeProfilesEvent.kind),
-                authors = listOf(it.pubkeyHex),
-                limit = 1
-            )
-        )
-    }
-
     fun createBookmarksFilter() = user?.let {
         TypedFilter(
             types = COMMON_FEED_TYPES,
@@ -97,17 +76,6 @@ object NostrUserProfileDataSource : NostrDataSource("UserProfileFeed") {
         )
     }
 
-    fun createReceivedAwardsFilter() = user?.let {
-        TypedFilter(
-            types = COMMON_FEED_TYPES,
-            filter = JsonFilter(
-                kinds = listOf(BadgeAwardEvent.kind),
-                tags = mapOf("p" to listOf(it.pubkeyHex)),
-                limit = 20
-            )
-        )
-    }
-
     val userInfoChannel = requestNewChannel()
 
     override fun updateChannelFilters() {
@@ -115,10 +83,7 @@ object NostrUserProfileDataSource : NostrDataSource("UserProfileFeed") {
             createUserInfoFilter(),
             createUserPostsFilter(),
             createFollowFilter(),
-            createFollowersFilter(),
             createUserReceivedZapsFilter(),
-            createAcceptedAwardsFilter(),
-            createReceivedAwardsFilter(),
             createBookmarksFilter()
         ).ifEmpty { null }
     }
