@@ -182,12 +182,6 @@ dependencies {
     playImplementation platform('com.google.firebase:firebase-bom:32.2.0')
     playImplementation 'com.google.firebase:firebase-messaging-ktx'
 
-    // Charts
-    implementation "com.patrykandpatrick.vico:core:${vico_version}"
-    implementation "com.patrykandpatrick.vico:compose:${vico_version}"
-    implementation "com.patrykandpatrick.vico:views:${vico_version}"
-    implementation "com.patrykandpatrick.vico:compose-m2:${vico_version}"
-
     // immutable collections to avoid recomposition
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 

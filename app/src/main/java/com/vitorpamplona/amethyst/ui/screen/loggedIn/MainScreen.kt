@@ -38,7 +38,6 @@ import com.vitorpamplona.amethyst.ui.navigation.AppNavigation
 import com.vitorpamplona.amethyst.ui.navigation.AppTopBar
 import com.vitorpamplona.amethyst.ui.navigation.DrawerContent
 import com.vitorpamplona.amethyst.ui.navigation.Route
-import com.vitorpamplona.amethyst.ui.note.UserReactionsViewModel
 import com.vitorpamplona.amethyst.ui.screen.AccountState
 import com.vitorpamplona.amethyst.ui.screen.AccountStateViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListKnownFeedViewModel
@@ -97,11 +96,6 @@ fun MainScreen(
     val notifFeedViewModel: NotificationViewModel = viewModel(
         key = accountViewModel.userProfile().pubkeyHex + "NotificationViewModel",
         factory = NotificationViewModel.Factory(accountViewModel.account)
-    )
-
-    val userReactionsStatsModel: UserReactionsViewModel = viewModel(
-        key = accountViewModel.userProfile().pubkeyHex + "UserReactionsViewModel",
-        factory = UserReactionsViewModel.Factory(accountViewModel.account)
     )
 
     val knownFeedViewModel: NostrChatroomListKnownFeedViewModel = viewModel(
@@ -176,7 +170,6 @@ fun MainScreen(
                     knownFeedViewModel = knownFeedViewModel,
                     newFeedViewModel = newFeedViewModel,
                     notifFeedViewModel = notifFeedViewModel,
-                    userReactionsStatsModel = userReactionsStatsModel,
                     navController = navController,
                     accountViewModel = accountViewModel,
                     themeViewModel = themeViewModel

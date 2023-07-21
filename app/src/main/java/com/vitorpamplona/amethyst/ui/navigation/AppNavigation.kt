@@ -7,7 +7,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.vitorpamplona.amethyst.ui.note.UserReactionsViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListKnownFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListNewFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeFeedViewModel
@@ -37,7 +36,6 @@ fun AppNavigation(
     knownFeedViewModel: NostrChatroomListKnownFeedViewModel,
     newFeedViewModel: NostrChatroomListNewFeedViewModel,
     notifFeedViewModel: NotificationViewModel,
-    userReactionsStatsModel: UserReactionsViewModel,
     navController: NavHostController,
     accountViewModel: AccountViewModel,
     themeViewModel: ThemeViewModel
@@ -103,7 +101,6 @@ fun AppNavigation(
             composable(route.route, route.arguments, content = {
                 NotificationScreen(
                     notifFeedViewModel = notifFeedViewModel,
-                    userReactionsStatsModel = userReactionsStatsModel,
                     accountViewModel = accountViewModel,
                     nav = nav
                 )
