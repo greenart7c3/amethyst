@@ -82,19 +82,6 @@ open class Note(val idHex: String) {
 
     open fun idDisplayNote() = idNote().toShortenHex()
 
-    fun channelHex(): HexKey? {
-        return if (event is ChannelMessageEvent ||
-            event is ChannelMetadataEvent ||
-            event is ChannelCreateEvent
-        ) {
-            (event as? ChannelMessageEvent)?.channel()
-                ?: (event as? ChannelMetadataEvent)?.channel()
-                ?: (event as? ChannelCreateEvent)?.id
-        } else {
-            null
-        }
-    }
-
     open fun address(): ATag? = null
 
     open fun createdAt() = event?.createdAt()
@@ -485,8 +472,7 @@ open class Note(val idHex: String) {
                 event is GenericRepostEvent ||
                 replyTo == null ||
                 replyTo?.size == 0
-            ) &&
-            event !is ChannelMessageEvent
+            )
     }
 
     fun hasZapped(loggedIn: User): Boolean {

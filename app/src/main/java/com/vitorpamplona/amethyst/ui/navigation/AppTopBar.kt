@@ -58,19 +58,15 @@ import com.vitorpamplona.amethyst.model.GLOBAL_FOLLOWS
 import com.vitorpamplona.amethyst.model.KIND3_FOLLOWS
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.service.NostrAccountDataSource
-import com.vitorpamplona.amethyst.service.NostrChannelDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomListDataSource
-import com.vitorpamplona.amethyst.service.NostrDiscoveryDataSource
 import com.vitorpamplona.amethyst.service.NostrHashtagDataSource
 import com.vitorpamplona.amethyst.service.NostrHomeDataSource
 import com.vitorpamplona.amethyst.service.NostrSearchEventOrUserDataSource
-import com.vitorpamplona.amethyst.service.NostrSingleChannelDataSource
 import com.vitorpamplona.amethyst.service.NostrSingleEventDataSource
 import com.vitorpamplona.amethyst.service.NostrSingleUserDataSource
 import com.vitorpamplona.amethyst.service.NostrThreadDataSource
 import com.vitorpamplona.amethyst.service.NostrUserProfileDataSource
-import com.vitorpamplona.amethyst.service.NostrVideoDataSource
 import com.vitorpamplona.amethyst.service.checkNotInMainThread
 import com.vitorpamplona.amethyst.service.model.PeopleListEvent
 import com.vitorpamplona.amethyst.service.relays.Client
@@ -465,19 +461,15 @@ fun debugState(context: Context) {
     }
 
     NostrAccountDataSource.printCounter()
-    NostrChannelDataSource.printCounter()
     NostrChatroomDataSource.printCounter()
     NostrChatroomListDataSource.printCounter()
-    NostrDiscoveryDataSource.printCounter()
     NostrHashtagDataSource.printCounter()
     NostrHomeDataSource.printCounter()
     NostrSearchEventOrUserDataSource.printCounter()
-    NostrSingleChannelDataSource.printCounter()
     NostrSingleEventDataSource.printCounter()
     NostrSingleUserDataSource.printCounter()
     NostrThreadDataSource.printCounter()
     NostrUserProfileDataSource.printCounter()
-    NostrVideoDataSource.printCounter()
 
     Log.d("STATE DUMP", "Connected Relays: " + RelayPool.connectedRelays())
 

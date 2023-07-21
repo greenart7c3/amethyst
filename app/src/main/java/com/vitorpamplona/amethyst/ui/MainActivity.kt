@@ -31,9 +31,6 @@ import com.vitorpamplona.amethyst.BuildConfig
 import com.vitorpamplona.amethyst.LocalPreferences
 import com.vitorpamplona.amethyst.ServiceManager
 import com.vitorpamplona.amethyst.service.connectivitystatus.ConnectivityStatus
-import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.service.nip19.Nip19
 import com.vitorpamplona.amethyst.service.notifications.PushNotificationUtils
@@ -254,8 +251,6 @@ fun uriToRoute(uri: String?): String? {
                 Nip19.Type.EVENT -> {
                     if (nip19.kind == PrivateDmEvent.kind) {
                         "Room/${nip19.author}"
-                    } else if (nip19.kind == ChannelMessageEvent.kind || nip19.kind == ChannelCreateEvent.kind || nip19.kind == ChannelMetadataEvent.kind) {
-                        "Channel/${nip19.hex}"
                     } else {
                         "Event/${nip19.hex}"
                     }

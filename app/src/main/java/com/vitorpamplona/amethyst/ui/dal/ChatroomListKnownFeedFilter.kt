@@ -3,7 +3,6 @@ package com.vitorpamplona.amethyst.ui.dal
 import com.vitorpamplona.amethyst.model.Account
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.ui.actions.updated
 import kotlin.time.ExperimentalTime
@@ -32,16 +31,7 @@ class ChatroomListKnownFeedFilter(val account: Account) : AdditiveFeedFilter<Not
                 ?.lastOrNull { it.event != null }
         }
 
-        val publicChannels = account.selectedChatsFollowList().mapNotNull {
-            LocalCache.getChannelIfExists(it)
-        }.mapNotNull { it ->
-            it.notes.values
-                .filter { account.isAcceptable(it) && it.event != null }
-                .sortedWith(compareBy({ it.createdAt() }, { it.idHex }))
-                .lastOrNull()
-        }
-
-        return (privateMessages + publicChannels)
+        return (privateMessages)
             .sortedWith(compareBy({ it.createdAt() }, { it.idHex }))
             .reversed()
     }
@@ -51,27 +41,14 @@ class ChatroomListKnownFeedFilter(val account: Account) : AdditiveFeedFilter<Not
         val (feed, elapsed) = measureTimedValue {
             val me = account.userProfile()
 
-            // Gets the latest message by channel from the new items.
-            val newRelevantPublicMessages = filterRelevantPublicMessages(newItems, account)
-
             // Gets the latest message by room from the new items.
             val newRelevantPrivateMessages = filterRelevantPrivateMessages(newItems, account)
 
-            if (newRelevantPrivateMessages.isEmpty() && newRelevantPublicMessages.isEmpty()) {
+            if (newRelevantPrivateMessages.isEmpty()) {
                 return oldList
             }
 
             var myNewList = oldList
-
-            newRelevantPublicMessages.forEach { newNotePair ->
-                oldList.forEach { oldNote ->
-                    if (
-                        (newNotePair.key == oldNote.channelHex()) && (newNotePair.value.createdAt() ?: 0) > (oldNote.createdAt() ?: 0)
-                    ) {
-                        myNewList = myNewList.updated(oldNote, newNotePair.value)
-                    }
-                }
-            }
 
             newRelevantPrivateMessages.forEach { newNotePair ->
                 oldList.forEach { oldNote ->
@@ -93,37 +70,14 @@ class ChatroomListKnownFeedFilter(val account: Account) : AdditiveFeedFilter<Not
     }
 
     override fun applyFilter(newItems: Set<Note>): Set<Note> {
-        // Gets the latest message by channel from the new items.
-        val newRelevantPublicMessages = filterRelevantPublicMessages(newItems, account)
-
         // Gets the latest message by room from the new items.
         val newRelevantPrivateMessages = filterRelevantPrivateMessages(newItems, account)
 
-        return if (newRelevantPrivateMessages.isEmpty() && newRelevantPublicMessages.isEmpty()) {
+        return if (newRelevantPrivateMessages.isEmpty()) {
             emptySet()
         } else {
-            (newRelevantPrivateMessages.values + newRelevantPublicMessages.values).toSet()
+            (newRelevantPrivateMessages.values).toSet()
         }
-    }
-
-    private fun filterRelevantPublicMessages(newItems: Set<Note>, account: Account): MutableMap<String, Note> {
-        val followingChannels = account.userProfile().latestContactList?.taggedEvents()?.toSet() ?: emptySet()
-        val newRelevantPublicMessages = mutableMapOf<String, Note>()
-        newItems.filter { it.event is ChannelMessageEvent }.forEach { newNote ->
-            newNote.channelHex()?.let { channelHex ->
-                if (channelHex in followingChannels && account.isAcceptable(newNote)) {
-                    val lastNote = newRelevantPublicMessages.get(channelHex)
-                    if (lastNote != null) {
-                        if ((newNote.createdAt() ?: 0) > (lastNote.createdAt() ?: 0)) {
-                            newRelevantPublicMessages.put(channelHex, newNote)
-                        }
-                    } else {
-                        newRelevantPublicMessages.put(channelHex, newNote)
-                    }
-                }
-            }
-        }
-        return newRelevantPublicMessages
     }
 
     private fun filterRelevantPrivateMessages(newItems: Set<Note>, account: Account): MutableMap<String, Note> {

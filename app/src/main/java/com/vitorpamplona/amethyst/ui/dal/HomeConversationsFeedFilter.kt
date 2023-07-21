@@ -5,7 +5,6 @@ import com.vitorpamplona.amethyst.model.GLOBAL_FOLLOWS
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.TimeUtils
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.PeopleListEvent
 import com.vitorpamplona.amethyst.service.model.PollNoteEvent
 import com.vitorpamplona.amethyst.service.model.TextNoteEvent
@@ -40,7 +39,7 @@ class HomeConversationsFeedFilter(val account: Account) : AdditiveFeedFilter<Not
         return collection
             .asSequence()
             .filter {
-                (it.event is TextNoteEvent || it.event is PollNoteEvent || it.event is ChannelMessageEvent) &&
+                (it.event is TextNoteEvent || it.event is PollNoteEvent) &&
                     (isGlobal || it.author?.pubkeyHex in followingKeySet || it.event?.isTaggedHashes(followingTagSet) ?: false) &&
                     // && account.isAcceptable(it)  // This filter follows only. No need to check if acceptable
                     (isHiddenList || it.author?.let { !account.isHidden(it) } ?: true) &&

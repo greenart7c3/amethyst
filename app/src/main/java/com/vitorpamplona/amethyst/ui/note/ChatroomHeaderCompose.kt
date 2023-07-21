@@ -33,26 +33,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.map
 import com.vitorpamplona.amethyst.R
-import com.vitorpamplona.amethyst.model.Channel
-import com.vitorpamplona.amethyst.model.HexKey
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.User
-import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
-import com.vitorpamplona.amethyst.ui.components.RobohashAsyncImageProxy
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
 import com.vitorpamplona.amethyst.ui.theme.ChatHeadlineBorders
 import com.vitorpamplona.amethyst.ui.theme.DividerThickness
@@ -63,7 +54,6 @@ import com.vitorpamplona.amethyst.ui.theme.Size55dp
 import com.vitorpamplona.amethyst.ui.theme.Size75dp
 import com.vitorpamplona.amethyst.ui.theme.StdTopPadding
 import com.vitorpamplona.amethyst.ui.theme.grayText
-import com.vitorpamplona.amethyst.ui.theme.placeholderText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -90,17 +80,7 @@ fun ChatroomComposeChannelOrUser(
     accountViewModel: AccountViewModel,
     nav: (String) -> Unit
 ) {
-    val channelHex by remember(baseNote) {
-        derivedStateOf {
-            baseNote.channelHex()
-        }
-    }
-
-    if (channelHex != null) {
-        ChatroomChannel(channelHex, baseNote, accountViewModel, nav)
-    } else {
-        ChatroomDirectMessage(baseNote, accountViewModel, nav)
-    }
+    ChatroomDirectMessage(baseNote, accountViewModel, nav)
 }
 
 @Composable
@@ -128,112 +108,6 @@ private fun ChatroomDirectMessage(
             }
         }
     }
-}
-
-@Composable
-private fun ChatroomChannel(
-    channelHex: HexKey?,
-    baseNote: Note,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    LoadChannel(baseChannelHex = channelHex!!) { channel ->
-        ChannelRoomCompose(baseNote, channel, accountViewModel, nav)
-    }
-}
-
-@Composable
-private fun ChannelRoomCompose(
-    note: Note,
-    channel: Channel,
-    accountViewModel: AccountViewModel,
-    nav: (String) -> Unit
-) {
-    val authorState by note.author!!.live().metadata.observeAsState()
-    val authorName = remember(note, authorState) {
-        authorState?.user?.toBestDisplayName()
-    }
-
-    val chanHex = remember { channel.idHex }
-
-    val channelState by channel.live.observeAsState()
-    val channelPicture by remember(note, channelState) {
-        derivedStateOf {
-            channel.profilePicture()
-        }
-    }
-    val channelName by remember(note, channelState) {
-        derivedStateOf {
-            channel.toBestDisplayName()
-        }
-    }
-
-    val noteEvent = note.event
-
-    val route = remember(note) {
-        "Channel/$chanHex"
-    }
-
-    val description = if (noteEvent is ChannelCreateEvent) {
-        stringResource(R.string.channel_created)
-    } else if (noteEvent is ChannelMetadataEvent) {
-        "${stringResource(R.string.channel_information_changed_to)} "
-    } else {
-        noteEvent?.content()
-    }
-
-    val hasNewMessages = remember { mutableStateOf<Boolean>(false) }
-
-    WatchNotificationChanges(note, route, accountViewModel) { newHasNewMessages ->
-        if (hasNewMessages.value != newHasNewMessages) {
-            hasNewMessages.value = newHasNewMessages
-        }
-    }
-
-    ChannelName(
-        channelIdHex = chanHex,
-        channelPicture = channelPicture,
-        channelTitle = { modifier ->
-            ChannelTitleWithBoostInfo(channelName, modifier)
-        },
-        channelLastTime = remember(note) { note.createdAt() },
-        channelLastContent = remember(note) { "$authorName: $description" },
-        hasNewMessages = hasNewMessages,
-        onClick = { nav(route) }
-    )
-}
-
-@Composable
-private fun ChannelTitleWithBoostInfo(channelName: String, modifier: Modifier) {
-    val boosted = stringResource(id = R.string.public_chat)
-    val placeHolderColor = MaterialTheme.colors.placeholderText
-    val channelNameAndBoostInfo = remember {
-        buildAnnotatedString {
-            withStyle(
-                SpanStyle(
-                    fontWeight = FontWeight.Bold
-                )
-            ) {
-                append(channelName)
-            }
-
-            withStyle(
-                SpanStyle(
-                    color = placeHolderColor,
-                    fontWeight = FontWeight.Normal
-                )
-            ) {
-                append(" $boosted")
-            }
-        }
-    }
-
-    Text(
-        text = channelNameAndBoostInfo,
-        fontWeight = FontWeight.Bold,
-        modifier = modifier,
-        style = LocalTextStyle.current.copy(textDirection = TextDirection.Content)
-    )
 }
 
 @Composable
@@ -320,38 +194,6 @@ fun LoadUser(baseUserHex: String, content: @Composable (User?) -> Unit) {
     }
 
     content(user)
-}
-
-@Composable
-fun ChannelName(
-    channelIdHex: String,
-    channelPicture: String?,
-    channelTitle: @Composable (Modifier) -> Unit,
-    channelLastTime: Long?,
-    channelLastContent: String?,
-    hasNewMessages: MutableState<Boolean>,
-    onClick: () -> Unit
-) {
-    ChannelName(
-        channelPicture = {
-            RobohashAsyncImageProxy(
-                robot = channelIdHex,
-                model = channelPicture,
-                contentDescription = stringResource(R.string.channel_image),
-                modifier = remember {
-                    Modifier
-                        .width(Size55dp)
-                        .height(Size55dp)
-                        .clip(shape = CircleShape)
-                }
-            )
-        },
-        channelTitle,
-        channelLastTime,
-        channelLastContent,
-        hasNewMessages,
-        onClick
-    )
 }
 
 @Composable

@@ -3,7 +3,6 @@ package com.vitorpamplona.amethyst.ui.dal
 import com.vitorpamplona.amethyst.model.Account
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.LongTextNoteEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.service.model.TextNoteEvent
@@ -23,7 +22,7 @@ class HashtagFeedFilter(val tag: String, val account: Account) : AdditiveFeedFil
     }
 
     private fun innerApplyFilter(collection: Collection<Note>): Set<Note> {
-        val myTag = tag ?: return emptySet()
+        val myTag = tag
 
         return collection
             .asSequence()
@@ -31,7 +30,6 @@ class HashtagFeedFilter(val tag: String, val account: Account) : AdditiveFeedFil
                 (
                     it.event is TextNoteEvent ||
                         it.event is LongTextNoteEvent ||
-                        it.event is ChannelMessageEvent ||
                         it.event is PrivateDmEvent
                     ) &&
                     it.event?.isTaggedHash(myTag) == true

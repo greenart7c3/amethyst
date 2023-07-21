@@ -43,7 +43,6 @@ import com.vitorpamplona.amethyst.ui.screen.AccountState
 import com.vitorpamplona.amethyst.ui.screen.AccountStateViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListKnownFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListNewFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverChatFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeRepliesFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NotificationViewModel
@@ -95,11 +94,6 @@ fun MainScreen(
         factory = NostrHomeRepliesFeedViewModel.Factory(accountViewModel.account)
     )
 
-    val discoveryChatFeedViewModel: NostrDiscoverChatFeedViewModel = viewModel(
-        key = accountViewModel.userProfile().pubkeyHex + "NostrDiscoveryChatFeedViewModel",
-        factory = NostrDiscoverChatFeedViewModel.Factory(accountViewModel.account)
-    )
-
     val notifFeedViewModel: NotificationViewModel = viewModel(
         key = accountViewModel.userProfile().pubkeyHex + "NotificationViewModel",
         factory = NotificationViewModel.Factory(accountViewModel.account)
@@ -134,9 +128,6 @@ fun MainScreen(
                     Route.Home.base -> {
                         homeFeedViewModel.sendToTop()
                         repliesFeedViewModel.sendToTop()
-                    }
-                    Route.Discover.base -> {
-                        discoveryChatFeedViewModel.sendToTop()
                     }
                     Route.Notification.base -> {
                         notifFeedViewModel.invalidateDataAndSendToTop()
@@ -184,7 +175,6 @@ fun MainScreen(
                     repliesFeedViewModel = repliesFeedViewModel,
                     knownFeedViewModel = knownFeedViewModel,
                     newFeedViewModel = newFeedViewModel,
-                    discoveryChatFeedViewModel = discoveryChatFeedViewModel,
                     notifFeedViewModel = notifFeedViewModel,
                     userReactionsStatsModel = userReactionsStatsModel,
                     navController = navController,

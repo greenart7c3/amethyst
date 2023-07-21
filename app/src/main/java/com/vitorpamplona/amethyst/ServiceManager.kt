@@ -12,19 +12,15 @@ import com.vitorpamplona.amethyst.model.Account
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.service.HttpClient
 import com.vitorpamplona.amethyst.service.NostrAccountDataSource
-import com.vitorpamplona.amethyst.service.NostrChannelDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomListDataSource
-import com.vitorpamplona.amethyst.service.NostrDiscoveryDataSource
 import com.vitorpamplona.amethyst.service.NostrHashtagDataSource
 import com.vitorpamplona.amethyst.service.NostrHomeDataSource
 import com.vitorpamplona.amethyst.service.NostrSearchEventOrUserDataSource
-import com.vitorpamplona.amethyst.service.NostrSingleChannelDataSource
 import com.vitorpamplona.amethyst.service.NostrSingleEventDataSource
 import com.vitorpamplona.amethyst.service.NostrSingleUserDataSource
 import com.vitorpamplona.amethyst.service.NostrThreadDataSource
 import com.vitorpamplona.amethyst.service.NostrUserProfileDataSource
-import com.vitorpamplona.amethyst.service.NostrVideoDataSource
 import com.vitorpamplona.amethyst.service.relays.Client
 import com.vitorpamplona.amethyst.ui.actions.ImageUploader
 
@@ -36,6 +32,7 @@ object ServiceManager {
         start(context)
     }
 
+    @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
     @Synchronized
     fun start(context: Context) {
         Log.d("ServiceManager", "Starting Relay Services")
@@ -66,20 +63,15 @@ object ServiceManager {
             NostrAccountDataSource.account = myAccount
             NostrHomeDataSource.account = myAccount
             NostrChatroomListDataSource.account = myAccount
-            NostrVideoDataSource.account = myAccount
-            NostrDiscoveryDataSource.account = myAccount
             ImageUploader.account = myAccount
 
             // Notification Elements
             NostrHomeDataSource.start()
             NostrAccountDataSource.start()
             NostrChatroomListDataSource.start()
-            NostrDiscoveryDataSource.start()
-            NostrVideoDataSource.start()
 
             // More Info Data Sources
             NostrSingleEventDataSource.start()
-            NostrSingleChannelDataSource.start()
             NostrSingleUserDataSource.start()
         }
     }
@@ -89,19 +81,15 @@ object ServiceManager {
 
         NostrAccountDataSource.stop()
         NostrHomeDataSource.stop()
-        NostrChannelDataSource.stop()
         NostrChatroomDataSource.stop()
         NostrChatroomListDataSource.stop()
-        NostrDiscoveryDataSource.stop()
 
         NostrHashtagDataSource.stop()
         NostrSearchEventOrUserDataSource.stop()
-        NostrSingleChannelDataSource.stop()
         NostrSingleEventDataSource.stop()
         NostrSingleUserDataSource.stop()
         NostrThreadDataSource.stop()
         NostrUserProfileDataSource.stop()
-        NostrVideoDataSource.stop()
 
         Client.disconnect()
     }
@@ -110,7 +98,6 @@ object ServiceManager {
         LocalCache.cleanObservers()
 
         account?.let {
-            LocalCache.pruneOldAndHiddenMessages(it)
             LocalCache.pruneHiddenMessages(it)
             LocalCache.pruneContactLists(it)
             // LocalCache.pruneNonFollows(it)

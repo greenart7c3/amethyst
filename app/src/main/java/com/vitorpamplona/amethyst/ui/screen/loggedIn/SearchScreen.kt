@@ -48,7 +48,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.Account
-import com.vitorpamplona.amethyst.model.Channel
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.User
@@ -56,7 +55,6 @@ import com.vitorpamplona.amethyst.service.NostrSearchEventOrUserDataSource
 import com.vitorpamplona.amethyst.service.checkNotInMainThread
 import com.vitorpamplona.amethyst.ui.components.BundledUpdate
 import com.vitorpamplona.amethyst.ui.note.AboutDisplay
-import com.vitorpamplona.amethyst.ui.note.ChannelName
 import com.vitorpamplona.amethyst.ui.note.ClearTextIcon
 import com.vitorpamplona.amethyst.ui.note.ClickableUserPicture
 import com.vitorpamplona.amethyst.ui.note.NoteCompose
@@ -146,12 +144,10 @@ class SearchBarViewModel(val account: Account) : ViewModel() {
 
     private var _searchResultsUsers = MutableStateFlow<List<User>>(emptyList())
     private var _searchResultsNotes = MutableStateFlow<List<Note>>(emptyList())
-    private var _searchResultsChannels = MutableStateFlow<List<Channel>>(emptyList())
     private var _hashtagResults = MutableStateFlow<List<String>>(emptyList())
 
     val searchResultsUsers = _searchResultsUsers.asStateFlow()
     val searchResultsNotes = _searchResultsNotes.asStateFlow()
-    val searchResultsChannels = _searchResultsChannels.asStateFlow()
     val hashtagResults = _hashtagResults.asStateFlow()
 
     val isSearching by derivedStateOf {
@@ -166,7 +162,6 @@ class SearchBarViewModel(val account: Account) : ViewModel() {
         if (searchValue.isBlank()) {
             _hashtagResults.value = emptyList()
             _searchResultsUsers.value = emptyList()
-            _searchResultsChannels.value = emptyList()
             _searchResultsNotes.value = emptyList()
             return
         }
@@ -174,15 +169,12 @@ class SearchBarViewModel(val account: Account) : ViewModel() {
         _hashtagResults.emit(findHashtags(searchValue))
         _searchResultsUsers.emit(LocalCache.findUsersStartingWith(searchValue).sortedWith(compareBy({ account.isFollowing(it) }, { it.toBestDisplayName() })).reversed())
         _searchResultsNotes.emit(LocalCache.findNotesStartingWith(searchValue).sortedWith(compareBy({ it.createdAt() }, { it.idHex })).reversed())
-        _searchResultsChannels.emit(LocalCache.findChannelsStartingWith(searchValue))
     }
 
     fun clear() {
         searchValue = ""
         _searchResultsUsers.value = emptyList()
-        _searchResultsChannels.value = emptyList()
         _searchResultsNotes.value = emptyList()
-        _searchResultsChannels.value = emptyList()
     }
 
     private val bundler = BundledUpdate(250, Dispatchers.IO)
@@ -331,12 +323,7 @@ private fun DisplaySearchResults(
 
     val hashTags by searchBarViewModel.hashtagResults.collectAsState()
     val users by searchBarViewModel.searchResultsUsers.collectAsState()
-    val channels by searchBarViewModel.searchResultsChannels.collectAsState()
     val notes by searchBarViewModel.searchResultsNotes.collectAsState()
-
-    val hasNewMessages = remember {
-        mutableStateOf(false)
-    }
 
     LazyColumn(
         modifier = Modifier.fillMaxHeight(),
@@ -360,26 +347,6 @@ private fun DisplaySearchResults(
             key = { _, item -> "u" + item.pubkeyHex }
         ) { _, item ->
             UserCompose(item, accountViewModel = accountViewModel, nav = nav)
-        }
-
-        itemsIndexed(
-            channels,
-            key = { _, item -> "c" + item.idHex }
-        ) { _, item ->
-            ChannelName(
-                channelIdHex = item.idHex,
-                channelPicture = item.profilePicture(),
-                channelTitle = {
-                    Text(
-                        item.toBestDisplayName(),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                channelLastTime = null,
-                channelLastContent = item.summary(),
-                hasNewMessages = hasNewMessages,
-                onClick = { nav("Channel/${item.idHex}") }
-            )
         }
 
         itemsIndexed(

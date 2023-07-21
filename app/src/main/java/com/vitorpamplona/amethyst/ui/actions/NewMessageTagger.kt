@@ -30,16 +30,6 @@ class NewMessageTagger(
         replyTos = if (replyTos?.contains(note) == true) replyTos else replyTos?.plus(note) ?: listOf(note)
     }
 
-    fun tagIndex(user: User): Int {
-        // Postr Events assembles replies before mentions in the tag order
-        return (if (channelHex != null) 1 else 0) + (replyTos?.size ?: 0) + (mentions?.indexOf(user) ?: 0)
-    }
-
-    fun tagIndex(note: Note): Int {
-        // Postr Events assembles replies before mentions in the tag order
-        return (if (channelHex != null) 1 else 0) + (replyTos?.indexOf(note) ?: 0)
-    }
-
     fun run() {
         // adds all references to mentions and reply tos
         message.split('\n').forEach { paragraph: String ->

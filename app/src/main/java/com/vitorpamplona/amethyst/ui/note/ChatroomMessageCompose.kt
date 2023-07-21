@@ -43,13 +43,10 @@ import androidx.lifecycle.map
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.User
-import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.ui.actions.ImmutableListOfLists
 import com.vitorpamplona.amethyst.ui.actions.toImmutableListOfLists
 import com.vitorpamplona.amethyst.ui.components.CreateClickableTextWithEmoji
-import com.vitorpamplona.amethyst.ui.components.CreateTextWithEmoji
 import com.vitorpamplona.amethyst.ui.components.RobohashAsyncImageProxy
 import com.vitorpamplona.amethyst.ui.components.SensitivityWarning
 import com.vitorpamplona.amethyst.ui.components.TranslatableRichTextViewer
@@ -291,11 +288,7 @@ fun NormalChatNote(
             val clickableModifier = remember {
                 Modifier
                     .combinedClickable(
-                        onClick = {
-                            if (note.event is ChannelCreateEvent) {
-                                nav("Channel/${note.idHex}")
-                            }
-                        },
+                        onClick = { },
                         onLongClick = { popupExpanded = true }
                     )
             }
@@ -492,14 +485,6 @@ private fun NoteRow(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         when (remember(note) { note.event }) {
-            is ChannelCreateEvent -> {
-                RenderCreateChannelNote(note)
-            }
-
-            is ChannelMetadataEvent -> {
-                RenderChangeChannelMetadataNote(note)
-            }
-
             else -> {
                 RenderRegularTextNote(
                     note,
@@ -627,54 +612,6 @@ private fun RenderRegularTextNote(
             nav = nav
         )
     }
-}
-
-@Composable
-private fun RenderChangeChannelMetadataNote(
-    note: Note
-) {
-    val noteEvent = note.event as? ChannelMetadataEvent ?: return
-
-    val channelInfo = noteEvent.channelInfo()
-    val text = note.author?.toBestDisplayName()
-        .toString() + " ${stringResource(R.string.changed_chat_name_to)} '" + (
-        channelInfo.name
-            ?: ""
-        ) + "', ${stringResource(R.string.description_to)} '" + (
-        channelInfo.about
-            ?: ""
-        ) + "', ${stringResource(R.string.and_picture_to)} '" + (
-        channelInfo.picture
-            ?: ""
-        ) + "'"
-
-    CreateTextWithEmoji(
-        text = text,
-        tags = remember { note.author?.info?.latestMetadata?.tags?.toImmutableListOfLists() }
-    )
-}
-
-@Composable
-private fun RenderCreateChannelNote(note: Note) {
-    val noteEvent = note.event as? ChannelCreateEvent ?: return
-    val channelInfo = remember { noteEvent.channelInfo() }
-
-    val text = note.author?.toBestDisplayName()
-        .toString() + " ${stringResource(R.string.created)} " + (
-        channelInfo.name
-            ?: ""
-        ) + " ${stringResource(R.string.with_description_of)} '" + (
-        channelInfo.about
-            ?: ""
-        ) + "', ${stringResource(R.string.and_picture)} '" + (
-        channelInfo.picture
-            ?: ""
-        ) + "'"
-
-    CreateTextWithEmoji(
-        text = text,
-        tags = remember { note.author?.info?.latestMetadata?.tags?.toImmutableListOfLists() }
-    )
 }
 
 @Composable

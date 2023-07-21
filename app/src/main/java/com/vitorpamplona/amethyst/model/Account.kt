@@ -464,51 +464,6 @@ class Account(
         LocalCache.consume(event)
     }
 
-    fun follow(channel: Channel) {
-        if (!isWriteable()) return
-
-        val contactList = migrateCommunitiesAndChannelsIfNeeded(userProfile().latestContactList)
-
-        val event = if (contactList != null) {
-            ContactListEvent.followEvent(contactList, channel.idHex, keyPair.privKey!!)
-        } else {
-            ContactListEvent.createFromScratch(
-                followUsers = emptyList(),
-                followTags = emptyList(),
-                followCommunities = emptyList(),
-                followEvents = DefaultChannels.toList().plus(channel.idHex),
-                relayUse = Constants.defaultRelays.associate { it.url to ContactListEvent.ReadWrite(it.read, it.write) },
-                privateKey = keyPair.privKey!!
-            )
-        }
-
-        Client.send(event)
-        LocalCache.consume(event)
-    }
-
-    fun follow(community: AddressableNote) {
-        if (!isWriteable()) return
-
-        val contactList = migrateCommunitiesAndChannelsIfNeeded(userProfile().latestContactList)
-
-        val event = if (contactList != null) {
-            ContactListEvent.followAddressableEvent(contactList, community.address, keyPair.privKey!!)
-        } else {
-            val relays = Constants.defaultRelays.associate { it.url to ContactListEvent.ReadWrite(it.read, it.write) }
-            ContactListEvent.createFromScratch(
-                followUsers = emptyList(),
-                followTags = emptyList(),
-                followCommunities = listOf(community.address),
-                followEvents = DefaultChannels.toList(),
-                relayUse = relays,
-                privateKey = keyPair.privKey!!
-            )
-        }
-
-        Client.send(event)
-        LocalCache.consume(event)
-    }
-
     fun follow(tag: String) {
         if (!isWriteable()) return
 
@@ -561,23 +516,6 @@ class Account(
             val event = ContactListEvent.unfollowHashtag(
                 contactList,
                 tag,
-                keyPair.privKey!!
-            )
-
-            Client.send(event)
-            LocalCache.consume(event)
-        }
-    }
-
-    fun unfollow(channel: Channel) {
-        if (!isWriteable()) return
-
-        val contactList = migrateCommunitiesAndChannelsIfNeeded(userProfile().latestContactList)
-
-        if (contactList != null && contactList.tags.isNotEmpty()) {
-            val event = ContactListEvent.unfollowEvent(
-                contactList,
-                channel.idHex,
                 keyPair.privKey!!
             )
 
@@ -738,27 +676,6 @@ class Account(
         LocalCache.consume(signedEvent)
     }
 
-    fun sendChannelMessage(message: String, toChannel: String, replyTo: List<Note>?, mentions: List<User>?, zapReceiver: String? = null, wantsToMarkAsSensitive: Boolean, zapRaiserAmount: Long? = null) {
-        if (!isWriteable()) return
-
-        // val repliesToHex = listOfNotNull(replyingTo?.idHex).ifEmpty { null }
-        val repliesToHex = replyTo?.map { it.idHex }
-        val mentionsHex = mentions?.map { it.pubkeyHex }
-
-        val signedEvent = ChannelMessageEvent.create(
-            message = message,
-            channel = toChannel,
-            replyTos = repliesToHex,
-            mentions = mentionsHex,
-            zapReceiver = zapReceiver,
-            markAsSensitive = wantsToMarkAsSensitive,
-            zapRaiserAmount = zapRaiserAmount,
-            privateKey = keyPair.privKey!!
-        )
-        Client.send(signedEvent)
-        LocalCache.consume(signedEvent, null)
-    }
-
     fun sendPrivateMessage(message: String, toUser: User, replyingTo: Note? = null, mentions: List<User>?, zapReceiver: String? = null, wantsToMarkAsSensitive: Boolean, zapRaiserAmount: Long? = null) {
         if (!isWriteable()) return
 
@@ -779,28 +696,6 @@ class Account(
         )
         Client.send(signedEvent)
         LocalCache.consume(signedEvent, null)
-    }
-
-    fun sendCreateNewChannel(name: String, about: String, picture: String) {
-        if (!isWriteable()) return
-
-        val metadata = ChannelCreateEvent.ChannelData(
-            name,
-            about,
-            picture
-        )
-
-        val event = ChannelCreateEvent.create(
-            channelInfo = metadata,
-            privateKey = keyPair.privKey!!
-        )
-
-        Client.send(event)
-        LocalCache.consume(event)
-
-        LocalCache.getChannelIfExists(event.id)?.let {
-            follow(it)
-        }
     }
 
     fun removeEmojiPack(usersEmojiList: Note, emojiList: Note) {
@@ -1221,27 +1116,6 @@ class Account(
     fun selectedChatsFollowList(): Set<String> {
         val contactList = userProfile().latestContactList
         return contactList?.taggedEvents()?.toSet() ?: DefaultChannels
-    }
-
-    fun sendChangeChannel(name: String, about: String, picture: String, channel: Channel) {
-        if (!isWriteable()) return
-
-        val metadata = ChannelCreateEvent.ChannelData(
-            name,
-            about,
-            picture
-        )
-
-        val event = ChannelMetadataEvent.create(
-            newChannelInfo = metadata,
-            originalChannelIdHex = channel.idHex,
-            privateKey = keyPair.privKey!!
-        )
-
-        Client.send(event)
-        LocalCache.consume(event)
-
-        follow(channel)
     }
 
     fun decryptContent(note: Note): String? {

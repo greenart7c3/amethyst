@@ -5,7 +5,6 @@ import com.vitorpamplona.amethyst.service.model.*
 import com.vitorpamplona.amethyst.service.model.BadgeAwardEvent
 import com.vitorpamplona.amethyst.service.model.BadgeProfilesEvent
 import com.vitorpamplona.amethyst.service.model.BookmarkListEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.ContactListEvent
 import com.vitorpamplona.amethyst.service.model.LnZapEvent
 import com.vitorpamplona.amethyst.service.model.MetadataEvent
@@ -102,7 +101,6 @@ object NostrAccountDataSource : NostrDataSource("AccountData") {
                 ReportEvent.kind,
                 LnZapEvent.kind,
                 LnZapPaymentResponseEvent.kind,
-                ChannelMessageEvent.kind,
                 BadgeAwardEvent.kind
             ),
             tags = mapOf("p" to listOf(account.userProfile().pubkeyHex)),

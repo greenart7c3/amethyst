@@ -299,7 +299,6 @@ private fun RenderSearchResults(
 ) {
     if (searchBarViewModel.isSearching) {
         val users by searchBarViewModel.searchResultsUsers.collectAsState()
-        val channels by searchBarViewModel.searchResultsChannels.collectAsState()
 
         Row(
             modifier = Modifier
@@ -324,44 +323,9 @@ private fun RenderSearchResults(
                         searchBarViewModel.clear()
                     }
                 }
-
-                itemsIndexed(
-                    channels,
-                    key = { _, item -> "c" + item.idHex }
-                ) { _, item ->
-                    RenderChannel(item) {
-                        nav("Channel/${item.idHex}")
-                        searchBarViewModel.clear()
-                    }
-                }
             }
         }
     }
-}
-
-@Composable
-private fun RenderChannel(
-    item: com.vitorpamplona.amethyst.model.Channel,
-    onClick: () -> Unit
-) {
-    val hasNewMessages = remember {
-        mutableStateOf(false)
-    }
-
-    ChannelName(
-        channelIdHex = item.idHex,
-        channelPicture = item.profilePicture(),
-        channelTitle = {
-            Text(
-                item.toBestDisplayName(),
-                fontWeight = FontWeight.Bold
-            )
-        },
-        channelLastTime = null,
-        channelLastContent = item.summary(),
-        hasNewMessages,
-        onClick = onClick
-    )
 }
 
 @Composable

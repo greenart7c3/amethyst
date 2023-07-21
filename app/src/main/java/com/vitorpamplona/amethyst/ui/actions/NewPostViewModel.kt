@@ -116,7 +116,7 @@ open class NewPostViewModel() : ViewModel() {
 
         canAddInvoice = account.userProfile().info?.lnAddress() != null
         canAddZapRaiser = account.userProfile().info?.lnAddress() != null
-        canUsePoll = originalNote?.event !is PrivateDmEvent && originalNote?.channelHex() == null
+        canUsePoll = originalNote?.event !is PrivateDmEvent
         contentToAddUrl = null
 
         wantsForwardZapTo = false

@@ -44,12 +44,10 @@ import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.User
 import com.vitorpamplona.amethyst.service.NIP30Parser
-import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.service.nip19.Nip19
 import com.vitorpamplona.amethyst.ui.actions.ImmutableListOfLists
 import com.vitorpamplona.amethyst.ui.actions.toImmutableListOfLists
-import com.vitorpamplona.amethyst.ui.note.LoadChannel
 import com.vitorpamplona.amethyst.ui.note.toShortenHex
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -154,40 +152,16 @@ private fun DisplayNoteLink(
 
     val note = remember(noteState) { noteState?.note } ?: return
 
-    val channelHex = remember(noteState) { note.channelHex() }
     val noteIdDisplayNote = remember(noteState) { "@${note.idDisplayNote()}" }
-    val addedCharts = remember { "${nip19.additionalChars}" }
+    val addedCharts = remember { nip19.additionalChars }
 
-    if (note.event is ChannelCreateEvent || nip19.kind == ChannelCreateEvent.kind) {
-        CreateClickableText(
-            clickablePart = noteIdDisplayNote,
-            suffix = addedCharts,
-            route = remember(noteState) { "Channel/${nip19.hex}" },
-            nav = nav
-        )
-    } else if (note.event is PrivateDmEvent || nip19.kind == PrivateDmEvent.kind) {
+    if (note.event is PrivateDmEvent || nip19.kind == PrivateDmEvent.kind) {
         CreateClickableText(
             clickablePart = noteIdDisplayNote,
             suffix = addedCharts,
             route = remember(noteState) { "Room/${note.author?.pubkeyHex}" },
             nav = nav
         )
-    } else if (channelHex != null) {
-        LoadChannel(baseChannelHex = channelHex) { baseChannel ->
-            val channelState by baseChannel.live.observeAsState()
-            val channelDisplayName by remember(channelState) {
-                derivedStateOf {
-                    channelState?.channel?.toBestDisplayName() ?: noteIdDisplayNote
-                }
-            }
-
-            CreateClickableText(
-                clickablePart = channelDisplayName,
-                suffix = addedCharts,
-                route = remember(noteState) { "Channel/${baseChannel.idHex}" },
-                nav = nav
-            )
-        }
     } else {
         CreateClickableText(
             clickablePart = noteIdDisplayNote,

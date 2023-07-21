@@ -22,7 +22,6 @@ import androidx.navigation.NavController
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
-import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.ui.navigation.Route
 import kotlinx.coroutines.Dispatchers
@@ -75,16 +74,11 @@ fun LoadRedirectScreen(baseNote: Note, nav: (String) -> Unit) {
         scope.launch {
             val note = noteState?.note
             val event = note?.event
-            val channelHex = note?.channelHex()
 
             if (event == null) {
                 // stay here, loading
-            } else if (event is ChannelCreateEvent) {
-                nav("Channel/${note.idHex}")
             } else if (event is PrivateDmEvent) {
                 nav("Room/${note.author?.pubkeyHex}")
-            } else if (channelHex != null) {
-                nav("Channel/$channelHex")
             } else {
                 nav("Note/${note.idHex}")
             }

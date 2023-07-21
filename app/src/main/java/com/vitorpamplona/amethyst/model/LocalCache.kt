@@ -26,7 +26,6 @@ object LocalCache {
 
     val users = ConcurrentHashMap<HexKey, User>(5000)
     val notes = ConcurrentHashMap<HexKey, Note>(5000)
-    val channels = ConcurrentHashMap<HexKey, Channel>()
     val addressables = ConcurrentHashMap<String, AddressableNote>(100)
 
     val awaitingPaymentRequests =
@@ -63,10 +62,6 @@ object LocalCache {
         return addressables[key] ?: notes[key]
     }
 
-    fun getChannelIfExists(key: String): Channel? {
-        return channels[key]
-    }
-
     fun checkGetOrCreateNote(key: String): Note? {
         checkNotInMainThread()
 
@@ -95,31 +90,11 @@ object LocalCache {
         }
     }
 
-    fun checkGetOrCreateChannel(key: String): Channel? {
-        checkNotInMainThread()
-
-        if (isValidHex(key)) {
-            return getOrCreateChannel(key) {
-                PublicChatChannel(key)
-            }
-        }
-        return null
-    }
-
     private fun isValidHex(key: String): Boolean {
         if (key.isBlank()) return false
         if (key.contains(":")) return false
 
         return HexValidator.isHex(key)
-    }
-
-    fun getOrCreateChannel(key: String, channelFactory: (String) -> Channel): Channel {
-        checkNotInMainThread()
-
-        return channels[key] ?: run {
-            val newObject = channelFactory(key)
-            channels.putIfAbsent(key, newObject) ?: newObject
-        }
     }
 
     fun checkGetOrCreateAddressableNote(key: String): AddressableNote? {
@@ -615,10 +590,6 @@ object LocalCache {
                     masterNote.removeReport(deleteNote)
                 }
 
-                deleteNote.channelHex()?.let {
-                    channels[it]?.removeNote(deleteNote)
-                }
-
                 if (deleteNote.event is PrivateDmEvent) {
                     val author = deleteNote.author
                     val recipient = (deleteNote.event as? PrivateDmEvent)?.verifiedRecipientPubKey()?.let { checkGetOrCreateUser(it) }
@@ -650,7 +621,7 @@ object LocalCache {
 
         val author = getOrCreateUser(event.pubKey)
         val repliesTo = event.boostedPost().mapNotNull { checkGetOrCreateNote(it) } +
-            event.taggedAddresses().mapNotNull { getOrCreateAddressableNote(it) }
+            event.taggedAddresses().map { getOrCreateAddressableNote(it) }
 
         note.loadEvent(event, author, repliesTo)
 
@@ -741,110 +712,6 @@ object LocalCache {
         }
 
         refreshObservers(note)
-    }
-
-    fun consume(event: ChannelCreateEvent) {
-        // Log.d("MT", "New Event ${event.content} ${event.id.toHex()}")
-        val oldChannel = getOrCreateChannel(event.id) {
-            PublicChatChannel(it)
-        }
-        val author = getOrCreateUser(event.pubKey)
-
-        val note = getOrCreateNote(event.id)
-        if (note.event == null) {
-            oldChannel.addNote(note)
-            note.loadEvent(event, author, emptyList())
-
-            refreshObservers(note)
-        }
-
-        if (event.createdAt <= oldChannel.updatedMetadataAt) {
-            return // older data, does nothing
-        }
-        if (oldChannel.creator == null || oldChannel.creator == author) {
-            if (oldChannel is PublicChatChannel) {
-                oldChannel.updateChannelInfo(author, event.channelInfo(), event.createdAt)
-            }
-        }
-    }
-
-    fun consume(event: ChannelMetadataEvent) {
-        val channelId = event.channel()
-        // Log.d("MT", "New User ${users.size} ${event.contactMetaData.name}")
-        if (channelId.isNullOrBlank()) return
-
-        // new event
-        val oldChannel = checkGetOrCreateChannel(channelId) ?: return
-
-        val author = getOrCreateUser(event.pubKey)
-        if (event.createdAt > oldChannel.updatedMetadataAt) {
-            if (oldChannel.creator == null || oldChannel.creator == author) {
-                if (oldChannel is PublicChatChannel) {
-                    oldChannel.updateChannelInfo(author, event.channelInfo(), event.createdAt)
-                }
-            }
-        } else {
-            // Log.d("MT","Relay sent a previous Metadata Event ${oldUser.toBestDisplayName()} ${formattedDateTime(event.createdAt)} > ${formattedDateTime(oldUser.updatedAt)}")
-        }
-
-        val note = getOrCreateNote(event.id)
-        if (note.event == null) {
-            oldChannel.addNote(note)
-            note.loadEvent(event, author, emptyList())
-
-            refreshObservers(note)
-        }
-    }
-
-    fun consume(event: ChannelMessageEvent, relay: Relay?) {
-        val channelId = event.channel()
-
-        if (channelId.isNullOrBlank()) return
-
-        val channel = checkGetOrCreateChannel(channelId) ?: return
-
-        val note = getOrCreateNote(event.id)
-        channel.addNote(note)
-
-        val author = getOrCreateUser(event.pubKey)
-
-        if (relay != null) {
-            author.addRelayBeingUsed(relay, event.createdAt)
-            note.addRelay(relay)
-        }
-
-        // Already processed this event.
-        if (note.event != null) return
-
-        if (antiSpam.isSpam(event, relay)) {
-            relay?.let {
-                it.spamCounter++
-            }
-            return
-        }
-
-        val replyTo = event.tagsWithoutCitations()
-            .filter { it != event.channel() }
-            .mapNotNull { checkGetOrCreateNote(it) }
-
-        note.loadEvent(event, author, replyTo)
-
-        // Log.d("CM", "New Chat Note (${note.author?.toBestDisplayName()} ${note.event?.content()} ${formattedDateTime(event.createdAt)}")
-
-        // Counts the replies
-        replyTo.forEach {
-            it.addReply(note)
-        }
-
-        refreshObservers(note)
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun consume(event: ChannelHideMessageEvent) {
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun consume(event: ChannelMuteUserEvent) {
     }
 
     fun consume(event: LnZapEvent) {
@@ -1068,33 +935,12 @@ object LocalCache {
         return notes.values.filter {
             (it.event is TextNoteEvent && it.event?.content()?.contains(text, true) ?: false) ||
                 (it.event is PollNoteEvent && it.event?.content()?.contains(text, true) ?: false) ||
-                (it.event is ChannelMessageEvent && it.event?.content()?.contains(text, true) ?: false) ||
                 it.idHex.startsWith(text, true) ||
                 it.idNote().startsWith(text, true)
         } + addressables.values.filter {
             (it.event as? LongTextNoteEvent)?.content?.contains(text, true) ?: false ||
                 it.event?.matchTag1With(text) ?: false ||
                 it.idHex.startsWith(text, true)
-        }
-    }
-
-    fun findChannelsStartingWith(text: String): List<Channel> {
-        checkNotInMainThread()
-
-        val key = try {
-            Nip19.uriToRoute(text)?.hex ?: Hex.decode(text).toHexKey()
-        } catch (e: Exception) {
-            null
-        }
-
-        if (key != null && channels[key] != null) {
-            return listOfNotNull(channels[key])
-        }
-
-        return channels.values.filter {
-            it.anyNameStartsWith(text) ||
-                it.idHex.startsWith(text, true) ||
-                it.idNote().startsWith(text, true)
         }
     }
 
@@ -1105,28 +951,6 @@ object LocalCache {
 
         users.forEach {
             it.value.clearLive()
-        }
-    }
-
-    fun pruneOldAndHiddenMessages(account: Account) {
-        checkNotInMainThread()
-
-        channels.forEach { it ->
-            val toBeRemoved = it.value.pruneOldAndHiddenMessages(account)
-
-            toBeRemoved.forEach {
-                notes.remove(it.idHex)
-                // Doesn't need to clean up the replies and mentions.. Too small to matter.
-
-                // Counts the replies
-                it.replyTo?.forEach { _ ->
-                    it.removeReply(it)
-                }
-            }
-
-            if (toBeRemoved.size > 100 || it.value.notes.size > 100) {
-                println("PRUNE: ${toBeRemoved.size} messages removed from ${it.value.toBestDisplayName()}. ${it.value.notes.size} kept")
-            }
         }
     }
 
@@ -1201,11 +1025,6 @@ object LocalCache {
                 is BadgeDefinitionEvent -> consume(event)
                 is BadgeProfilesEvent -> consume(event)
                 is BookmarkListEvent -> consume(event)
-                is ChannelCreateEvent -> consume(event)
-                is ChannelHideMessageEvent -> consume(event)
-                is ChannelMessageEvent -> consume(event, relay)
-                is ChannelMetadataEvent -> consume(event)
-                is ChannelMuteUserEvent -> consume(event)
                 is ClassifiedsEvent -> consume(event)
                 is ContactListEvent -> consume(event)
                 is DeletionEvent -> consume(event)

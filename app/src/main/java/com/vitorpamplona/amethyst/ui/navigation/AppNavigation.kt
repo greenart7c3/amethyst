@@ -10,17 +10,14 @@ import androidx.navigation.compose.composable
 import com.vitorpamplona.amethyst.ui.note.UserReactionsViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListKnownFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrChatroomListNewFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverChatFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeRepliesFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NotificationViewModel
 import com.vitorpamplona.amethyst.ui.screen.ThemeViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.BookmarkListScreen
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChannelScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChatroomListScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChatroomScreen
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.DiscoverScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.HashtagScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.HiddenUsersScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.HomeScreen
@@ -39,7 +36,6 @@ fun AppNavigation(
     repliesFeedViewModel: NostrHomeRepliesFeedViewModel,
     knownFeedViewModel: NostrChatroomListKnownFeedViewModel,
     newFeedViewModel: NostrChatroomListNewFeedViewModel,
-    discoveryChatFeedViewModel: NostrDiscoverChatFeedViewModel,
     notifFeedViewModel: NotificationViewModel,
     userReactionsStatsModel: UserReactionsViewModel,
     navController: NavHostController,
@@ -93,16 +89,6 @@ fun AppNavigation(
                 )
             }
         )
-
-        Route.Discover.let { route ->
-            composable(route.route, route.arguments, content = {
-                DiscoverScreen(
-                    discoveryChatFeedViewModel = discoveryChatFeedViewModel,
-                    accountViewModel = accountViewModel,
-                    nav = nav
-                )
-            })
-        }
 
         Route.Search.let { route ->
             composable(route.route, route.arguments, content = {
@@ -161,16 +147,6 @@ fun AppNavigation(
             composable(route.route, route.arguments, content = {
                 ChatroomScreen(
                     userId = it.arguments?.getString("id"),
-                    accountViewModel = accountViewModel,
-                    nav = nav
-                )
-            })
-        }
-
-        Route.Channel.let { route ->
-            composable(route.route, route.arguments, content = {
-                ChannelScreen(
-                    channelId = it.arguments?.getString("id"),
                     accountViewModel = accountViewModel,
                     nav = nav
                 )

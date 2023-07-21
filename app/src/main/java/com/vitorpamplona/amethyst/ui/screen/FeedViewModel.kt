@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.vitorpamplona.amethyst.model.Account
-import com.vitorpamplona.amethyst.model.Channel
 import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.model.User
@@ -17,11 +16,9 @@ import com.vitorpamplona.amethyst.ui.components.BundledUpdate
 import com.vitorpamplona.amethyst.ui.dal.AdditiveFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.BookmarkPrivateFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.BookmarkPublicFeedFilter
-import com.vitorpamplona.amethyst.ui.dal.ChannelFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.ChatroomFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.ChatroomListKnownFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.ChatroomListNewFeedFilter
-import com.vitorpamplona.amethyst.ui.dal.DiscoverChatFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.FeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HashtagFeedFilter
 import com.vitorpamplona.amethyst.ui.dal.HomeConversationsFeedFilter
@@ -42,25 +39,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class NostrChannelFeedViewModel(val channel: Channel, val account: Account) : FeedViewModel(ChannelFeedFilter(channel, account)) {
-    class Factory(val channel: Channel, val account: Account) : ViewModelProvider.Factory {
-        override fun <NostrChannelFeedViewModel : ViewModel> create(modelClass: Class<NostrChannelFeedViewModel>): NostrChannelFeedViewModel {
-            return NostrChannelFeedViewModel(channel, account) as NostrChannelFeedViewModel
-        }
-    }
-}
 class NostrChatroomFeedViewModel(val user: User, val account: Account) : FeedViewModel(ChatroomFeedFilter(user, account)) {
     class Factory(val user: User, val account: Account) : ViewModelProvider.Factory {
         override fun <NostrChatRoomFeedViewModel : ViewModel> create(modelClass: Class<NostrChatRoomFeedViewModel>): NostrChatRoomFeedViewModel {
             return NostrChatroomFeedViewModel(user, account) as NostrChatRoomFeedViewModel
-        }
-    }
-}
-
-class NostrDiscoverChatFeedViewModel(val account: Account) : FeedViewModel(DiscoverChatFeedFilter(account)) {
-    class Factory(val account: Account) : ViewModelProvider.Factory {
-        override fun <NostrDiscoverChatFeedViewModel : ViewModel> create(modelClass: Class<NostrDiscoverChatFeedViewModel>): NostrDiscoverChatFeedViewModel {
-            return NostrDiscoverChatFeedViewModel(account) as NostrDiscoverChatFeedViewModel
         }
     }
 }

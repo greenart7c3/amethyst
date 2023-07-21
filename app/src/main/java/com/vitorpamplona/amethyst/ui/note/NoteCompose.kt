@@ -88,10 +88,6 @@ import com.vitorpamplona.amethyst.service.model.AppDefinitionEvent
 import com.vitorpamplona.amethyst.service.model.AudioTrackEvent
 import com.vitorpamplona.amethyst.service.model.BadgeAwardEvent
 import com.vitorpamplona.amethyst.service.model.BadgeDefinitionEvent
-import com.vitorpamplona.amethyst.service.model.BaseTextNoteEvent
-import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
 import com.vitorpamplona.amethyst.service.model.ClassifiedsEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackEvent
 import com.vitorpamplona.amethyst.service.model.EmojiPackSelectionEvent
@@ -122,7 +118,6 @@ import com.vitorpamplona.amethyst.ui.components.LoadNote
 import com.vitorpamplona.amethyst.ui.components.LoadThumbAndThenVideoView
 import com.vitorpamplona.amethyst.ui.components.MeasureSpaceWidth
 import com.vitorpamplona.amethyst.ui.components.ObserveDisplayNip05Status
-import com.vitorpamplona.amethyst.ui.components.RobohashAsyncImageProxy
 import com.vitorpamplona.amethyst.ui.components.SensitivityWarning
 import com.vitorpamplona.amethyst.ui.components.ShowMoreButton
 import com.vitorpamplona.amethyst.ui.components.TranslatableRichTextViewer
@@ -137,7 +132,6 @@ import com.vitorpamplona.amethyst.ui.components.ZoomableUrlVideo
 import com.vitorpamplona.amethyst.ui.components.figureOutMimeType
 import com.vitorpamplona.amethyst.ui.components.imageExtensions
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChannelHeader
 import com.vitorpamplona.amethyst.ui.theme.ButtonBorder
 import com.vitorpamplona.amethyst.ui.theme.DividerThickness
 import com.vitorpamplona.amethyst.ui.theme.DoubleHorzSpacer
@@ -443,13 +437,6 @@ fun NormalNote(
     nav: (String) -> Unit
 ) {
     when (baseNote.event) {
-        is ChannelCreateEvent, is ChannelMetadataEvent -> ChannelHeader(
-            channelNote = baseNote,
-            showBottomDiviser = true,
-            sendToChannel = true,
-            accountViewModel = accountViewModel,
-            nav = nav
-        )
         is BadgeDefinitionEvent -> BadgeDisplay(baseNote = baseNote)
         is FileHeaderEvent -> FileHeaderDisplay(baseNote, accountViewModel)
         is FileStorageHeaderEvent -> FileStorageHeaderDisplay(baseNote, accountViewModel)
@@ -856,21 +843,11 @@ private fun RenderNoteRow(
 fun routeFor(note: Note, loggedIn: User): String? {
     val noteEvent = note.event
 
-    if (noteEvent is ChannelMessageEvent || noteEvent is ChannelCreateEvent || noteEvent is ChannelMetadataEvent) {
-        note.channelHex()?.let {
-            return "Channel/$it"
-        }
-    } else if (noteEvent is PrivateDmEvent) {
+    if (noteEvent is PrivateDmEvent) {
         return "Room/${noteEvent.talkingWith(loggedIn.pubkeyHex)}"
     } else {
         return "Note/${note.idHex}"
     }
-
-    return null
-}
-
-fun routeFor(note: Channel): String {
-    return "Channel/${note.idHex}"
 }
 
 fun routeFor(user: User): String {
@@ -1957,31 +1934,6 @@ private fun ReplyRow(
         } else {
             // ReplyInformation(note.replyTo, noteEvent.mentions(), accountViewModel, nav)
         }
-    } else {
-        val showChannelReply by remember {
-            derivedStateOf {
-                (noteEvent is ChannelMessageEvent && (note.replyTo != null || noteEvent.hasAnyTaggedUser()))
-            }
-        }
-
-        if (showChannelReply) {
-            val channelHex = note.channelHex()
-            channelHex?.let {
-                ChannelHeader(
-                    channelHex = channelHex,
-                    showBottomDiviser = false,
-                    sendToChannel = true,
-                    modifier = remember { Modifier.padding(vertical = 5.dp) },
-                    accountViewModel = accountViewModel,
-                    nav = nav
-                )
-
-                val replies = remember { note.replyTo?.toImmutableList() }
-                val mentions = remember { (note.event as? BaseTextNoteEvent)?.mentions()?.toImmutableList() ?: persistentListOf() }
-
-                ReplyInformationChannel(replies, mentions, accountViewModel, nav)
-            }
-        }
     }
 }
 
@@ -2178,70 +2130,6 @@ private fun RenderAuthorImages(
 
     if (isRepost) {
         RepostNoteAuthorPicture(baseNote, accountViewModel, nav)
-    }
-
-    val isChannel = baseNote.event is ChannelMessageEvent && baseNote.channelHex() != null
-
-    if (isChannel) {
-        val baseChannelHex = remember { baseNote.channelHex() }
-        if (baseChannelHex != null) {
-            LoadChannel(baseChannelHex) { channel ->
-                ChannelNotePicture(channel)
-            }
-        }
-    }
-}
-
-@Composable
-fun LoadChannel(baseChannelHex: String, content: @Composable (Channel) -> Unit) {
-    var channel by remember(baseChannelHex) {
-        mutableStateOf<Channel?>(LocalCache.getChannelIfExists(baseChannelHex))
-    }
-
-    if (channel == null) {
-        LaunchedEffect(key1 = baseChannelHex) {
-            launch(Dispatchers.IO) {
-                val newChannel = LocalCache.checkGetOrCreateChannel(baseChannelHex)
-                launch(Dispatchers.Main) {
-                    channel = newChannel
-                }
-            }
-        }
-    }
-
-    channel?.let {
-        content(it)
-    }
-}
-
-@Composable
-private fun ChannelNotePicture(baseChannel: Channel) {
-    val model by baseChannel.live.map {
-        it.channel.profilePicture()
-    }.distinctUntilChanged().observeAsState()
-
-    val backgroundColor = MaterialTheme.colors.background
-
-    val modifier = remember {
-        Modifier
-            .width(30.dp)
-            .height(30.dp)
-            .clip(shape = CircleShape)
-            .background(backgroundColor)
-            .border(
-                2.dp,
-                backgroundColor,
-                CircleShape
-            )
-    }
-
-    Box(Size30Modifier) {
-        RobohashAsyncImageProxy(
-            robot = baseChannel.idHex,
-            model = model,
-            contentDescription = stringResource(R.string.group_picture),
-            modifier = modifier
-        )
     }
 }
 

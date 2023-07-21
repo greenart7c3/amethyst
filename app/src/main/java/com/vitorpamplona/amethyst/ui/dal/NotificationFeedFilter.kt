@@ -34,8 +34,6 @@ class NotificationFeedFilter(val account: Account) : AdditiveFeedFilter<Note>() 
         val loggedInUserHex = loggedInUser.pubkeyHex
 
         return collection.filter {
-            it.event !is ChannelCreateEvent &&
-                it.event !is ChannelMetadataEvent &&
                 it.event !is LnZapRequestEvent &&
                 it.event !is BadgeDefinitionEvent &&
                 it.event !is BadgeProfilesEvent &&

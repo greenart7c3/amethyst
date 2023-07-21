@@ -1,7 +1,5 @@
 package com.vitorpamplona.amethyst.service
 
-import androidx.compose.ui.text.capitalize
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.LongTextNoteEvent
 import com.vitorpamplona.amethyst.service.model.PollNoteEvent
 import com.vitorpamplona.amethyst.service.model.TextNoteEvent
@@ -26,7 +24,7 @@ object NostrHashtagDataSource : NostrDataSource("SingleHashtagFeed") {
                         hashToLoad.capitalize()
                     )
                 ),
-                kinds = listOf(TextNoteEvent.kind, ChannelMessageEvent.kind, LongTextNoteEvent.kind, LongTextNoteEvent.kind, PollNoteEvent.kind),
+                kinds = listOf(TextNoteEvent.kind, LongTextNoteEvent.kind, LongTextNoteEvent.kind, PollNoteEvent.kind),
                 limit = 200
             )
         )

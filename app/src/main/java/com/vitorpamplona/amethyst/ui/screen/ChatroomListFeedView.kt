@@ -85,14 +85,8 @@ private fun FeedLoaded(
         if (markAsRead.value) {
             for (note in state.feed.value) {
                 note.event?.let {
-                    val channelHex = note.channelHex()
-                    val route = if (channelHex != null) {
-                        "Channel/$channelHex"
-                    } else {
-                        val roomUser = (note.event as? PrivateDmEvent)?.talkingWith(accountViewModel.account.userProfile().pubkeyHex)
-                        "Room/$roomUser"
-                    }
-
+                    val roomUser = (note.event as? PrivateDmEvent)?.talkingWith(accountViewModel.account.userProfile().pubkeyHex)
+                    val route = "Room/$roomUser"
                     accountViewModel.account.markAsRead(route, it.createdAt())
                 }
             }

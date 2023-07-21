@@ -1,9 +1,6 @@
 package com.vitorpamplona.amethyst.service
 
 import com.vitorpamplona.amethyst.model.Account
-import com.vitorpamplona.amethyst.service.model.ChannelCreateEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
-import com.vitorpamplona.amethyst.service.model.ChannelMetadataEvent
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.service.relays.COMMON_FEED_TYPES
 import com.vitorpamplona.amethyst.service.relays.EOSEAccount
@@ -35,59 +32,6 @@ object NostrChatroomListDataSource : NostrDataSource("MailBoxFeed") {
         )
     )
 
-    fun createChannelsCreatedbyMeFilter() = TypedFilter(
-        types = setOf(FeedType.PUBLIC_CHATS),
-        filter = JsonFilter(
-            kinds = listOf(ChannelCreateEvent.kind, ChannelMetadataEvent.kind),
-            authors = listOf(account.userProfile().pubkeyHex),
-            since = latestEOSEs.users[account.userProfile()]?.followList?.get(chatRoomList)?.relayList
-        )
-    )
-
-    fun createMyChannelsFilter(): TypedFilter {
-        val followingEvents = account.selectedChatsFollowList()
-
-        return TypedFilter(
-            types = COMMON_FEED_TYPES, // Metadata comes from any relay
-            filter = JsonFilter(
-                kinds = listOf(ChannelCreateEvent.kind),
-                ids = followingEvents.toList(),
-                since = latestEOSEs.users[account.userProfile()]?.followList?.get(chatRoomList)?.relayList
-            )
-        )
-    }
-
-    fun createLastChannelInfoFilter(): List<TypedFilter>? {
-        val followingEvents = account.selectedChatsFollowList()
-
-        return followingEvents.map {
-            TypedFilter(
-                types = COMMON_FEED_TYPES, // Metadata comes from any relay
-                filter = JsonFilter(
-                    kinds = listOf(ChannelMetadataEvent.kind),
-                    tags = mapOf("e" to listOf(it)),
-                    limit = 1
-                )
-            )
-        }
-    }
-
-    fun createLastMessageOfEachChannelFilter(): List<TypedFilter>? {
-        val followingEvents = account.selectedChatsFollowList()
-
-        return followingEvents.map {
-            TypedFilter(
-                types = setOf(FeedType.PUBLIC_CHATS),
-                filter = JsonFilter(
-                    kinds = listOf(ChannelMessageEvent.kind),
-                    tags = mapOf("e" to listOf(it)),
-                    since = latestEOSEs.users[account.userProfile()]?.followList?.get(chatRoomList)?.relayList,
-                    limit = 50 // Remember to consider spam that is being removed from the UI
-                )
-            )
-        }
-    }
-
     val chatroomListChannel = requestNewChannel { time, relayUrl ->
         latestEOSEs.addOrUpdate(account.userProfile(), chatRoomList, relayUrl, time)
     }
@@ -96,13 +40,10 @@ object NostrChatroomListDataSource : NostrDataSource("MailBoxFeed") {
         val list = listOf(
             createMessagesToMeFilter(),
             createMessagesFromMeFilter(),
-            createMyChannelsFilter()
         )
 
         chatroomListChannel.typedFilters = listOfNotNull(
-            list,
-            createLastChannelInfoFilter(),
-            createLastMessageOfEachChannelFilter()
+            list
         ).flatten().ifEmpty { null }
     }
 }
