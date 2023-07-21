@@ -55,7 +55,6 @@ import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -71,9 +70,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.map
-import coil.compose.AsyncImage
-import coil.request.CachePolicy
-import coil.request.ImageRequest
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.ui.actions.NewPostView
@@ -95,7 +91,6 @@ import com.vitorpamplona.amethyst.ui.theme.ReactionRowHeight
 import com.vitorpamplona.amethyst.ui.theme.ReactionRowZapraiserSize
 import com.vitorpamplona.amethyst.ui.theme.Size0dp
 import com.vitorpamplona.amethyst.ui.theme.Size17dp
-import com.vitorpamplona.amethyst.ui.theme.Size19dp
 import com.vitorpamplona.amethyst.ui.theme.Size20Modifier
 import com.vitorpamplona.amethyst.ui.theme.Size20dp
 import com.vitorpamplona.amethyst.ui.theme.Size22Modifier
@@ -104,7 +99,6 @@ import com.vitorpamplona.amethyst.ui.theme.Size75dp
 import com.vitorpamplona.amethyst.ui.theme.TinyBorders
 import com.vitorpamplona.amethyst.ui.theme.mediumImportanceLink
 import com.vitorpamplona.amethyst.ui.theme.placeholderText
-import com.vitorpamplona.amethyst.ui.theme.placeholderTextColorFilter
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.CoroutineScope
@@ -214,22 +208,6 @@ private fun InnerReactionRow(
                 }
             }
             Log.d("Rendering Metrics", "Reaction Zaps:  ${baseNote.event?.content()?.split("\n")?.getOrNull(0)?.take(15)}.. $elapsed")
-        }
-
-        Column(
-            verticalArrangement = Arrangement.Center,
-            modifier = remember { Modifier.weight(1f) }
-        ) {
-            val (value, elapsed) = measureTimedValue {
-                Row(verticalAlignment = CenterVertically) {
-                    ViewCountReaction(
-                        note = baseNote,
-                        grayTint = MaterialTheme.colors.placeholderText,
-                        viewCountColorFilter = MaterialTheme.colors.placeholderTextColorFilter
-                    )
-                }
-            }
-            Log.d("Rendering Metrics", "Reaction Views: ${baseNote.event?.content()?.split("\n")?.getOrNull(0)?.take(15)}.. $elapsed")
         }
     }
 }
@@ -1142,44 +1120,6 @@ fun WatchZapAmountsForNote(baseNote: Note, accountViewModel: AccountViewModel, o
             onZapAmount(showAmount(accountViewModel.calculateZapAmount(baseNote)))
         }
     }
-}
-
-@Composable
-fun ViewCountReaction(
-    note: Note,
-    grayTint: Color,
-    barChartSize: Dp = Size19dp,
-    numberSize: Dp = Size24dp,
-    viewCountColorFilter: ColorFilter
-) {
-    ViewCountIcon(barChartSize, grayTint)
-    DrawViewCount(note, numberSize, viewCountColorFilter)
-}
-
-@Composable
-private fun DrawViewCount(
-    note: Note,
-    numberSize: Dp = Size24dp,
-    viewCountColorFilter: ColorFilter
-) {
-    val context = LocalContext.current
-
-    val iconModifier = remember {
-        Modifier.height(numberSize)
-    }
-
-    AsyncImage(
-        model = remember(note) {
-            ImageRequest.Builder(context)
-                .data("https://counter.amethyst.social/${note.idHex}.svg?label=+&color=00000000")
-                .diskCachePolicy(CachePolicy.DISABLED)
-                .memoryCachePolicy(CachePolicy.ENABLED)
-                .build()
-        },
-        contentDescription = stringResource(R.string.view_count),
-        modifier = iconModifier,
-        colorFilter = viewCountColorFilter
-    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
