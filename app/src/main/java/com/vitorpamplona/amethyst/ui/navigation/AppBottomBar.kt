@@ -48,7 +48,6 @@ import kotlinx.coroutines.launch
 val bottomNavigationItems = listOf(
     Route.Home,
     Route.Message,
-    Route.Video,
     Route.Discover,
     Route.Notification
 )

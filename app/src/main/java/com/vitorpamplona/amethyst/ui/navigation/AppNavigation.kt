@@ -15,7 +15,6 @@ import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverCommunityFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverLiveFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeRepliesFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrVideoFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NotificationViewModel
 import com.vitorpamplona.amethyst.ui.screen.ThemeViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
@@ -34,7 +33,6 @@ import com.vitorpamplona.amethyst.ui.screen.loggedIn.ProfileScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.SearchScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.SettingsScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ThreadScreen
-import com.vitorpamplona.amethyst.ui.screen.loggedIn.VideoScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -44,13 +42,11 @@ fun AppNavigation(
     repliesFeedViewModel: NostrHomeRepliesFeedViewModel,
     knownFeedViewModel: NostrChatroomListKnownFeedViewModel,
     newFeedViewModel: NostrChatroomListNewFeedViewModel,
-    videoFeedViewModel: NostrVideoFeedViewModel,
     discoveryLiveFeedViewModel: NostrDiscoverLiveFeedViewModel,
     discoveryCommunityFeedViewModel: NostrDiscoverCommunityFeedViewModel,
     discoveryChatFeedViewModel: NostrDiscoverChatFeedViewModel,
     notifFeedViewModel: NotificationViewModel,
     userReactionsStatsModel: UserReactionsViewModel,
-
     navController: NavHostController,
     accountViewModel: AccountViewModel,
     themeViewModel: ThemeViewModel
@@ -102,16 +98,6 @@ fun AppNavigation(
                 )
             }
         )
-
-        Route.Video.let { route ->
-            composable(route.route, route.arguments, content = {
-                VideoScreen(
-                    videoFeedView = videoFeedViewModel,
-                    accountViewModel = accountViewModel,
-                    nav = nav
-                )
-            })
-        }
 
         Route.Discover.let { route ->
             composable(route.route, route.arguments, content = {

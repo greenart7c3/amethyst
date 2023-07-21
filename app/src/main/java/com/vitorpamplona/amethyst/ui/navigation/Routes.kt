@@ -56,11 +56,6 @@ sealed class Route(
         icon = R.drawable.ic_search
     )
 
-    object Video : Route(
-        route = "Video",
-        icon = R.drawable.ic_video
-    )
-
     object Discover : Route(
         route = "Discover",
         icon = R.drawable.ic_sensors,

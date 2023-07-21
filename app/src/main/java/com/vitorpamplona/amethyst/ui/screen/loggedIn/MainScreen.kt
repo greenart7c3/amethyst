@@ -31,7 +31,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.vitorpamplona.amethyst.ui.buttons.ChannelFabColumn
 import com.vitorpamplona.amethyst.ui.buttons.NewCommunityNoteButton
-import com.vitorpamplona.amethyst.ui.buttons.NewImageButton
 import com.vitorpamplona.amethyst.ui.buttons.NewNoteButton
 import com.vitorpamplona.amethyst.ui.navigation.*
 import com.vitorpamplona.amethyst.ui.navigation.AccountSwitchBottomSheet
@@ -50,7 +49,6 @@ import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverCommunityFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrDiscoverLiveFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NostrHomeRepliesFeedViewModel
-import com.vitorpamplona.amethyst.ui.screen.NostrVideoFeedViewModel
 import com.vitorpamplona.amethyst.ui.screen.NotificationViewModel
 import com.vitorpamplona.amethyst.ui.screen.ThemeViewModel
 import kotlinx.coroutines.launch
@@ -98,11 +96,6 @@ fun MainScreen(
     val repliesFeedViewModel: NostrHomeRepliesFeedViewModel = viewModel(
         key = accountViewModel.userProfile().pubkeyHex + "NostrHomeRepliesFeedViewModel",
         factory = NostrHomeRepliesFeedViewModel.Factory(accountViewModel.account)
-    )
-
-    val videoFeedViewModel: NostrVideoFeedViewModel = viewModel(
-        key = accountViewModel.userProfile().pubkeyHex + "NostrVideoFeedViewModel",
-        factory = NostrVideoFeedViewModel.Factory(accountViewModel.account)
     )
 
     val discoveryLiveFeedViewModel: NostrDiscoverLiveFeedViewModel = viewModel(
@@ -155,9 +148,6 @@ fun MainScreen(
                         homeFeedViewModel.sendToTop()
                         repliesFeedViewModel.sendToTop()
                     }
-                    Route.Video.base -> {
-                        videoFeedViewModel.sendToTop()
-                    }
                     Route.Discover.base -> {
                         discoveryLiveFeedViewModel.sendToTop()
                         discoveryCommunityFeedViewModel.sendToTop()
@@ -209,7 +199,6 @@ fun MainScreen(
                     repliesFeedViewModel = repliesFeedViewModel,
                     knownFeedViewModel = knownFeedViewModel,
                     newFeedViewModel = newFeedViewModel,
-                    videoFeedViewModel = videoFeedViewModel,
                     discoveryLiveFeedViewModel = discoveryLiveFeedViewModel,
                     discoveryCommunityFeedViewModel = discoveryCommunityFeedViewModel,
                     discoveryChatFeedViewModel = discoveryChatFeedViewModel,
@@ -263,7 +252,6 @@ private fun WritePermissionButtons(
     when (currentRoute) {
         Route.Home.base -> NewNoteButton(accountViewModel, nav)
         Route.Message.base -> ChannelFabColumn(accountViewModel, nav)
-        Route.Video.base -> NewImageButton(accountViewModel, nav)
         Route.Community.base -> {
             val communityId by remember(navEntryState.value) {
                 derivedStateOf {

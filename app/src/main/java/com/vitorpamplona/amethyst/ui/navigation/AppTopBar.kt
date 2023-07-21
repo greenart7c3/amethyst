@@ -124,9 +124,7 @@ private fun RenderTopRouteBar(
         Route.Room.base -> NoTopBar()
         Route.Community.base -> NoTopBar()
         Route.Hashtag.base -> NoTopBar()
-        // Route.Profile.route -> TopBarWithBackButton(nav)
         Route.Home.base -> HomeTopBar(followLists, scaffoldState, accountViewModel, nav)
-        Route.Video.base -> StoriesTopBar(followLists, scaffoldState, accountViewModel, nav)
         Route.Discover.base -> DiscoveryTopBar(followLists, scaffoldState, accountViewModel, nav)
         Route.Notification.base -> NotificationTopBar(followLists, scaffoldState, accountViewModel, nav)
         else -> MainTopBar(scaffoldState, accountViewModel, nav)
@@ -135,23 +133,6 @@ private fun RenderTopRouteBar(
 
 @Composable
 fun NoTopBar() {
-}
-
-@Composable
-fun StoriesTopBar(followLists: FollowListViewModel, scaffoldState: ScaffoldState, accountViewModel: AccountViewModel, nav: (String) -> Unit) {
-    GenericTopBar(scaffoldState, accountViewModel, nav) { accountViewModel ->
-        val list by accountViewModel.accountLiveData.map {
-            it.account.defaultStoriesFollowList
-        }.observeAsState(GLOBAL_FOLLOWS)
-
-        FollowList(
-            followLists,
-            list,
-            true
-        ) { listName ->
-            accountViewModel.account.changeDefaultStoriesFollowList(listName)
-        }
-    }
 }
 
 @Composable
