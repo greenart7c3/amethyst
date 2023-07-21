@@ -553,7 +553,7 @@ open class Note(val idHex: String) {
     fun isHiddenFor(accountChoices: Account.LiveHiddenUsers): Boolean {
         if (event == null) return false
 
-        val isBoostedNoteHidden = if (event is GenericRepostEvent || event is RepostEvent || event is CommunityPostApprovalEvent) {
+        val isBoostedNoteHidden = if (event is GenericRepostEvent || event is RepostEvent) {
             replyTo?.lastOrNull()?.isHiddenFor(accountChoices) ?: false
         } else {
             false

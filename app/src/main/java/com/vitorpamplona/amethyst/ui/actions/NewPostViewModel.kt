@@ -160,8 +160,6 @@ open class NewPostViewModel() : ViewModel() {
                 localZapRaiserAmount,
                 relayList
             )
-        } else if (originalNote?.channelHex() != null) {
-            account?.sendChannelMessage(tagger.message, tagger.channelHex!!, tagger.replyTos, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount)
         } else if (originalNote?.event is PrivateDmEvent) {
             account?.sendPrivateMessage(tagger.message, originalNote!!.author!!, originalNote!!, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount)
         } else {
