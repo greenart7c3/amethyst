@@ -12,10 +12,8 @@ import com.vitorpamplona.amethyst.service.toNpub
 class NewMessageTagger(
     var message: String,
     var mentions: List<User>? = null,
-    var replyTos: List<Note>? = null,
-    var channelHex: String? = null
+    var replyTos: List<Note>? = null
 ) {
-
     val directMentions = mutableSetOf<HexKey>()
 
     fun addUserToMentions(user: User) {

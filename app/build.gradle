@@ -177,11 +177,7 @@ dependencies {
 
     // Google services model the translate text
     playImplementation 'com.google.mlkit:translate:17.0.1'
-
-    // PushNotifications
-    playImplementation platform('com.google.firebase:firebase-bom:32.2.0')
-    playImplementation 'com.google.firebase:firebase-messaging-ktx'
-
+    
     // immutable collections to avoid recomposition
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.5")
 

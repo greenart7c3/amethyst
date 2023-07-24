@@ -130,7 +130,7 @@ open class NewPostViewModel() : ViewModel() {
     }
 
     fun sendPost(relayList: List<Relay>? = null) {
-        val tagger = NewMessageTagger(message.text, mentions, replyTos, originalNote?.channelHex())
+        val tagger = NewMessageTagger(message.text, mentions, replyTos)
         tagger.run()
 
         val zapReceiver = if (wantsForwardZapTo) {

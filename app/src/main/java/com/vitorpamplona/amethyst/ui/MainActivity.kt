@@ -33,7 +33,6 @@ import com.vitorpamplona.amethyst.ServiceManager
 import com.vitorpamplona.amethyst.service.connectivitystatus.ConnectivityStatus
 import com.vitorpamplona.amethyst.service.model.PrivateDmEvent
 import com.vitorpamplona.amethyst.service.nip19.Nip19
-import com.vitorpamplona.amethyst.service.notifications.PushNotificationUtils
 import com.vitorpamplona.amethyst.service.relays.Client
 import com.vitorpamplona.amethyst.ui.components.DefaultMutedSetting
 import com.vitorpamplona.amethyst.ui.components.keepPlayingMutex
@@ -117,8 +116,6 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch(Dispatchers.IO) {
             ServiceManager.start(this@MainActivity)
         }
-
-        PushNotificationUtils().init(LocalPreferences.allSavedAccounts())
     }
 
     override fun onPause() {
