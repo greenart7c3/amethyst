@@ -11,8 +11,8 @@
       "type": "UNIVERSAL",
       "filters": [],
       "attributes": [],
-      "versionCode": 258,
-      "versionName": "0.70.1",
+      "versionCode": 262,
+      "versionName": "0.70.5",
       "outputFile": "app-play-universal-release.apk"
     },
     {
@@ -24,8 +24,8 @@
         }
       ],
       "attributes": [],
-      "versionCode": 258,
-      "versionName": "0.70.1",
+      "versionCode": 262,
+      "versionName": "0.70.5",
       "outputFile": "app-play-x86_64-release.apk"
     },
     {
@@ -37,8 +37,8 @@
         }
       ],
       "attributes": [],
-      "versionCode": 258,
-      "versionName": "0.70.1",
+      "versionCode": 262,
+      "versionName": "0.70.5",
       "outputFile": "app-play-x86-release.apk"
     }
   ],

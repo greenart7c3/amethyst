@@ -852,7 +852,7 @@ fun RenderTextEvent(
 ) {
     val eventContent = remember(note.event) {
         val subject = (note.event as? TextNoteEvent)?.subject()?.ifEmpty { null }
-        val body = accountViewModel.decrypt(note)
+        val body = accountViewModel.decrypt(note)?.trim()
 
         if (!subject.isNullOrBlank() && body?.split("\n")?.get(0)?.contains(subject) == false) {
             "## $subject\n$body"
