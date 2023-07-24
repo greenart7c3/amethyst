@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name_release" translatable="false">Amethyst Lite</string>
-    <string name="app_name_debug" translatable="false">Amethyst Lite Debug</string>
+    <string name="app_name_release" translatable="false">Ammolite</string>
+    <string name="app_name_debug" translatable="false">Ammolite Debug</string>
     <string name="point_to_the_qr_code">Point to the QR Code</string>
     <string name="show_qr">Show QR</string>
     <string name="profile_image">Profile Image</string>
