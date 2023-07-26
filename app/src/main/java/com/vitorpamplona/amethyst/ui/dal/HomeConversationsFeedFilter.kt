@@ -40,7 +40,7 @@ class HomeConversationsFeedFilter(val account: Account) : AdditiveFeedFilter<Not
         return collection
             .asSequence()
             .filter {
-                (it.event is TextNoteEvent || it.event is PollNoteEvent || it.event is ChannelMessageEvent || it.event is LiveActivitiesChatMessageEvent) &&
+                (it.event is TextNoteEvent || it.event is PollNoteEvent) &&
                     (isGlobal || it.author?.pubkeyHex in followingKeySet || it.event?.isTaggedHashes(followingTagSet) ?: false || it.event?.isTaggedGeoHashes(followingGeoHashSet) ?: false) &&
                     // && account.isAcceptable(it)  // This filter follows only. No need to check if acceptable
                     (isHiddenList || it.author?.let { !account.isHidden(it) } ?: true) &&

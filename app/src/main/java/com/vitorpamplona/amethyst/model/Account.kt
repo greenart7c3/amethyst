@@ -466,29 +466,6 @@ class Account(
         LocalCache.consume(event)
     }
 
-    fun follow(channel: Channel) {
-        if (!isWriteable()) return
-
-        val contactList = migrateCommunitiesAndChannelsIfNeeded(userProfile().latestContactList)
-
-        val event = if (contactList != null) {
-            ContactListEvent.followEvent(contactList, channel.idHex, keyPair.privKey!!)
-        } else {
-            ContactListEvent.createFromScratch(
-                followUsers = emptyList(),
-                followTags = emptyList(),
-                followGeohashes = emptyList(),
-                followCommunities = emptyList(),
-                followEvents = DefaultChannels.toList().plus(channel.idHex),
-                relayUse = Constants.defaultRelays.associate { it.url to ContactListEvent.ReadWrite(it.read, it.write) },
-                privateKey = keyPair.privKey!!
-            )
-        }
-
-        Client.send(event)
-        LocalCache.consume(event)
-    }
-
     fun follow(community: AddressableNote) {
         if (!isWriteable()) return
 
@@ -610,23 +587,6 @@ class Account(
             val event = ContactListEvent.unfollowGeohash(
                 contactList,
                 geohash,
-                keyPair.privKey!!
-            )
-
-            Client.send(event)
-            LocalCache.consume(event)
-        }
-    }
-
-    fun unfollow(channel: Channel) {
-        if (!isWriteable()) return
-
-        val contactList = migrateCommunitiesAndChannelsIfNeeded(userProfile().latestContactList)
-
-        if (contactList != null && contactList.tags.isNotEmpty()) {
-            val event = ContactListEvent.unfollowEvent(
-                contactList,
-                channel.idHex,
                 keyPair.privKey!!
             )
 
@@ -789,50 +749,6 @@ class Account(
         // println("Sending new PollNoteEvent: %s".format(signedEvent.toJson()))
         Client.send(signedEvent, relayList = relayList)
         LocalCache.consume(signedEvent)
-    }
-
-    fun sendChannelMessage(message: String, toChannel: String, replyTo: List<Note>?, mentions: List<User>?, zapReceiver: String? = null, wantsToMarkAsSensitive: Boolean, zapRaiserAmount: Long? = null, geohash: String? = null) {
-        if (!isWriteable()) return
-
-        // val repliesToHex = listOfNotNull(replyingTo?.idHex).ifEmpty { null }
-        val repliesToHex = replyTo?.map { it.idHex }
-        val mentionsHex = mentions?.map { it.pubkeyHex }
-
-        val signedEvent = ChannelMessageEvent.create(
-            message = message,
-            channel = toChannel,
-            replyTos = repliesToHex,
-            mentions = mentionsHex,
-            zapReceiver = zapReceiver,
-            markAsSensitive = wantsToMarkAsSensitive,
-            zapRaiserAmount = zapRaiserAmount,
-            geohash = geohash,
-            privateKey = keyPair.privKey!!
-        )
-        Client.send(signedEvent)
-        LocalCache.consume(signedEvent, null)
-    }
-
-    fun sendLiveMessage(message: String, toChannel: ATag, replyTo: List<Note>?, mentions: List<User>?, zapReceiver: String? = null, wantsToMarkAsSensitive: Boolean, zapRaiserAmount: Long? = null, geohash: String? = null) {
-        if (!isWriteable()) return
-
-        // val repliesToHex = listOfNotNull(replyingTo?.idHex).ifEmpty { null }
-        val repliesToHex = replyTo?.map { it.idHex }
-        val mentionsHex = mentions?.map { it.pubkeyHex }
-
-        val signedEvent = LiveActivitiesChatMessageEvent.create(
-            message = message,
-            activity = toChannel,
-            replyTos = repliesToHex,
-            mentions = mentionsHex,
-            zapReceiver = zapReceiver,
-            markAsSensitive = wantsToMarkAsSensitive,
-            zapRaiserAmount = zapRaiserAmount,
-            geohash = geohash,
-            privateKey = keyPair.privKey!!
-        )
-        Client.send(signedEvent)
-        LocalCache.consume(signedEvent, null)
     }
 
     fun sendPrivateMessage(message: String, toUser: User, replyingTo: Note? = null, mentions: List<User>?, zapReceiver: String? = null, wantsToMarkAsSensitive: Boolean, zapRaiserAmount: Long? = null, geohash: String? = null) {

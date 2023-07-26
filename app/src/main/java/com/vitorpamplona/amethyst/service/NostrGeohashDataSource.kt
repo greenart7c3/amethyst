@@ -1,6 +1,5 @@
 package com.vitorpamplona.amethyst.service
 
-import com.vitorpamplona.amethyst.service.model.ChannelMessageEvent
 import com.vitorpamplona.amethyst.service.model.LongTextNoteEvent
 import com.vitorpamplona.amethyst.service.model.PollNoteEvent
 import com.vitorpamplona.amethyst.service.model.TextNoteEvent
@@ -22,7 +21,7 @@ object NostrGeohashDataSource : NostrDataSource("SingleGeoHashFeed") {
                         hashToLoad
                     )
                 ),
-                kinds = listOf(TextNoteEvent.kind, ChannelMessageEvent.kind, LongTextNoteEvent.kind, LongTextNoteEvent.kind, PollNoteEvent.kind),
+                kinds = listOf(TextNoteEvent.kind, LongTextNoteEvent.kind, LongTextNoteEvent.kind, PollNoteEvent.kind),
                 limit = 200
             )
         )

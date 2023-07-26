@@ -174,12 +174,6 @@ open class NewPostViewModel() : ViewModel() {
                 relayList,
                 geoHash
             )
-        } else if (originalNote?.channelHex() != null) {
-            if (originalNote is AddressableEvent && originalNote?.address() != null) {
-                account?.sendLiveMessage(tagger.message, originalNote?.address()!!, tagger.replyTos, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount, geoHash)
-            } else {
-                account?.sendChannelMessage(tagger.message, tagger.channelHex!!, tagger.replyTos, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount, geoHash)
-            }
         } else if (originalNote?.event is PrivateDmEvent) {
             account?.sendPrivateMessage(tagger.message, originalNote!!.author!!, originalNote!!, tagger.mentions, zapReceiver, wantsToMarkAsSensitive, localZapRaiserAmount, geoHash)
         } else {

@@ -87,14 +87,6 @@ class NostrGeoHashFeedViewModel(val geohash: String, val account: Account) : Fee
     }
 }
 
-class NostrCommunityFeedViewModel(val note: AddressableNote, val account: Account) : FeedViewModel(CommunityFeedFilter(note, account)) {
-    class Factory(val note: AddressableNote, val account: Account) : ViewModelProvider.Factory {
-        override fun <NostrCommunityFeedViewModel : ViewModel> create(modelClass: Class<NostrCommunityFeedViewModel>): NostrCommunityFeedViewModel {
-            return NostrCommunityFeedViewModel(note, account) as NostrCommunityFeedViewModel
-        }
-    }
-}
-
 class NostrUserProfileReportFeedViewModel(val user: User) : FeedViewModel(UserProfileReportsFeedFilter(user)) {
     class Factory(val user: User) : ViewModelProvider.Factory {
         override fun <NostrUserProfileReportFeedViewModel : ViewModel> create(modelClass: Class<NostrUserProfileReportFeedViewModel>): NostrUserProfileReportFeedViewModel {
