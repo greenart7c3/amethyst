@@ -17,7 +17,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.os.LocaleListCompat
@@ -55,6 +58,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val uri = intent?.data?.toString()
+        val startingPage = uriToRoute(uri)
+
         LocalPreferences.migrateSingleUserPrefs()
         val language = LocalPreferences.getPreferredLanguage()
         if (language.isNotBlank()) {
@@ -77,6 +83,17 @@ class MainActivity : AppCompatActivity() {
                     AccountScreen(accountStateViewModel, themeViewModel, navController)
                 }
             }
+
+            var actionableNextPage by remember { mutableStateOf(startingPage) }
+            actionableNextPage?.let {
+                LaunchedEffect(it) {
+                    navController.navigate(it) {
+                        popUpTo(Route.Home.route)
+                        launchSingleTop = true
+                    }
+                }
+                actionableNextPage = null
+            }
         }
 
         val networkRequest = NetworkRequest.Builder()
@@ -89,15 +106,6 @@ class MainActivity : AppCompatActivity() {
         connectivityManager.requestNetwork(networkRequest, networkCallback)
 
         Client.lenient = true
-
-        val uri = intent?.data?.toString()
-        val startingPage = uriToRoute(uri)
-        if (startingPage != null) {
-            navController.navigate(startingPage) {
-                popUpTo(Route.Home.route)
-                launchSingleTop = true
-            }
-        }
     }
 
     @OptIn(DelicateCoroutinesApi::class)

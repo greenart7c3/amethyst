@@ -10,7 +10,6 @@ import com.vitorpamplona.amethyst.model.toHexKey
 import com.vitorpamplona.amethyst.service.CryptoUtils
 import com.vitorpamplona.amethyst.service.nip19.Nip19
 import fr.acinq.secp256k1.Hex
-import fr.acinq.secp256k1.Secp256k1
 import java.lang.reflect.Type
 import java.math.BigDecimal
 import java.util.*
@@ -70,6 +69,7 @@ open class Event(
     }
 
     override fun hashtags() = tags.filter { it.size > 1 && it[0] == "t" }.map { it[1] }
+    override fun geohashes() = tags.filter { it.size > 1 && it[0] == "g" }.map { it[1] }
 
     override fun matchTag1With(text: String) = tags.any { it.size > 1 && it[1].contains(text, true) }
 
@@ -82,7 +82,10 @@ open class Event(
     override fun isTaggedAddressableNotes(idHexes: Set<String>) = tags.any { it.size > 1 && it[0] == "a" && it[1] in idHexes }
 
     override fun isTaggedHash(hashtag: String) = tags.any { it.size > 1 && it[0] == "t" && it[1].equals(hashtag, true) }
+
+    override fun isTaggedGeoHash(hashtag: String) = tags.any { it.size > 1 && it[0] == "g" && it[1].startsWith(hashtag, true) }
     override fun isTaggedHashes(hashtags: Set<String>) = tags.any { it.size > 1 && it[0] == "t" && it[1].lowercase() in hashtags }
+    override fun isTaggedGeoHashes(hashtags: Set<String>) = tags.any { it.size > 1 && it[0] == "g" && it[1].lowercase() in hashtags }
     override fun firstIsTaggedHashes(hashtags: Set<String>) = tags.firstOrNull { it.size > 1 && it[0] == "t" && it[1].lowercase() in hashtags }?.getOrNull(1)
 
     override fun firstIsTaggedAddressableNote(addressableNotes: Set<String>) = tags.firstOrNull { it.size > 1 && it[0] == "a" && it[1] in addressableNotes }?.getOrNull(1)
@@ -121,6 +124,10 @@ open class Event(
             }
         }
         return rank
+    }
+
+    override fun getGeoHash(): String? {
+        return tags.firstOrNull { it.size > 1 && it[0] == "g" }?.get(1)?.ifBlank { null }
     }
 
     override fun getReward(): BigDecimal? {
@@ -253,8 +260,6 @@ open class Event(
     }
 
     companion object {
-        private val secp256k1 = Secp256k1.get()
-
         val gson: Gson = GsonBuilder()
             .disableHtmlEscaping()
             .registerTypeAdapter(Event::class.java, EventSerializer())

@@ -67,7 +67,9 @@ import com.vitorpamplona.amethyst.ui.actions.NewUserMetadataView
 import com.vitorpamplona.amethyst.ui.actions.toImmutableListOfLists
 import com.vitorpamplona.amethyst.ui.components.CreateTextWithEmoji
 import com.vitorpamplona.amethyst.ui.components.DisplayNip05ProfileStatus
-import com.vitorpamplona.amethyst.ui.components.InvoiceRequest
+import com.vitorpamplona.amethyst.ui.components.InvoiceRequestCard
+import com.vitorpamplona.amethyst.ui.components.RobohashAsyncImage
+import com.vitorpamplona.amethyst.ui.components.RobohashFallbackAsyncImage
 import com.vitorpamplona.amethyst.ui.components.TranslatableRichTextViewer
 import com.vitorpamplona.amethyst.ui.components.ZoomableImageDialog
 import com.vitorpamplona.amethyst.ui.components.figureOutMimeType
@@ -915,7 +917,7 @@ fun DisplayLNAddress(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 5.dp)
             ) {
-                InvoiceRequest(
+                InvoiceRequestCard(
                     lud16,
                     userHex,
                     account,

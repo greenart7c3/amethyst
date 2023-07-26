@@ -60,6 +60,9 @@ import com.vitorpamplona.amethyst.model.LocalCache
 import com.vitorpamplona.amethyst.service.NostrAccountDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomDataSource
 import com.vitorpamplona.amethyst.service.NostrChatroomListDataSource
+import com.vitorpamplona.amethyst.service.NostrCommunityDataSource
+import com.vitorpamplona.amethyst.service.NostrDiscoveryDataSource
+import com.vitorpamplona.amethyst.service.NostrGeohashDataSource
 import com.vitorpamplona.amethyst.service.NostrHashtagDataSource
 import com.vitorpamplona.amethyst.service.NostrHomeDataSource
 import com.vitorpamplona.amethyst.service.NostrSearchEventOrUserDataSource
@@ -118,6 +121,8 @@ private fun RenderTopRouteBar(
         Route.Channel.base -> NoTopBar()
         Route.Room.base -> NoTopBar()
         Route.Hashtag.base -> NoTopBar()
+        Route.Geohash.base -> NoTopBar()
+        // Route.Profile.route -> TopBarWithBackButton(nav)
         Route.Home.base -> HomeTopBar(followLists, scaffoldState, accountViewModel, nav)
         Route.Discover.base -> DiscoveryTopBar(followLists, scaffoldState, accountViewModel, nav)
         Route.Notification.base -> NotificationTopBar(followLists, scaffoldState, accountViewModel, nav)
@@ -464,6 +469,7 @@ fun debugState(context: Context) {
     NostrChatroomDataSource.printCounter()
     NostrChatroomListDataSource.printCounter()
     NostrHashtagDataSource.printCounter()
+    NostrGeohashDataSource.printCounter()
     NostrHomeDataSource.printCounter()
     NostrSearchEventOrUserDataSource.printCounter()
     NostrSingleEventDataSource.printCounter()

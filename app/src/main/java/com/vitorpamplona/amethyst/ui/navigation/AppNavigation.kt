@@ -17,6 +17,9 @@ import com.vitorpamplona.amethyst.ui.screen.loggedIn.AccountViewModel
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.BookmarkListScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChatroomListScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.ChatroomScreen
+import com.vitorpamplona.amethyst.ui.screen.loggedIn.CommunityScreen
+import com.vitorpamplona.amethyst.ui.screen.loggedIn.DiscoverScreen
+import com.vitorpamplona.amethyst.ui.screen.loggedIn.GeoHashScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.HashtagScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.HiddenUsersScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.HomeScreen
@@ -134,6 +137,26 @@ fun AppNavigation(
             composable(route.route, route.arguments, content = {
                 HashtagScreen(
                     tag = it.arguments?.getString("id"),
+                    accountViewModel = accountViewModel,
+                    nav = nav
+                )
+            })
+        }
+
+        Route.Geohash.let { route ->
+            composable(route.route, route.arguments, content = {
+                GeoHashScreen(
+                    tag = it.arguments?.getString("id"),
+                    accountViewModel = accountViewModel,
+                    nav = nav
+                )
+            })
+        }
+
+        Route.Community.let { route ->
+            composable(route.route, route.arguments, content = {
+                CommunityScreen(
+                    aTagHex = it.arguments?.getString("id"),
                     accountViewModel = accountViewModel,
                     nav = nav
                 )

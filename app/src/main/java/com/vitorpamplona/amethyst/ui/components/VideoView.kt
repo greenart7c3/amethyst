@@ -189,7 +189,7 @@ fun VideoViewInner(
     if (!automaticallyStartPlayback.value) {
         ImageUrlWithDownloadButton(url = videoUri, showImage = automaticallyStartPlayback)
     } else {
-        VideoPlayerMutex(videoUri) { activeOnScreen ->
+        VideoPlayerActiveMutex(videoUri) { activeOnScreen ->
             val mediaItem = remember(videoUri) {
                 MediaItem.Builder()
                     .setMediaId(videoUri)
@@ -324,10 +324,6 @@ fun GetVideoController(
         }
     }
 
-    controller.value?.let {
-        inner(it, keepPlaying)
-    }
-
     // User pauses and resumes the app. What to do with videos?
     val scope = rememberCoroutineScope()
     val lifeCycleOwner = LocalLifecycleOwner.current
@@ -392,6 +388,10 @@ fun GetVideoController(
             }
         }
     }
+
+    controller.value?.let {
+        inner(it, keepPlaying)
+    }
 }
 
 // background playing mutex.
@@ -410,7 +410,7 @@ class VisibilityData() {
  * the screen wins the mutex.
  */
 @Composable
-fun VideoPlayerMutex(videoUri: String, inner: @Composable (MutableState<Boolean>) -> Unit) {
+fun VideoPlayerActiveMutex(videoUri: String, inner: @Composable (MutableState<Boolean>) -> Unit) {
     val myCache = remember(videoUri) {
         VisibilityData()
     }
@@ -605,38 +605,6 @@ fun ControlWhenPlayerIsActive(
             controller.removeListener(listener)
         }
     }
-}
-
-fun Modifier.onVisibilityChanges(onVisibilityChanges: (Boolean) -> Unit): Modifier = composed {
-    val view = LocalView.current
-    var isVisible: Boolean? by remember { mutableStateOf(null) }
-
-    onGloballyPositioned { coordinates ->
-        val newIsVisible = coordinates.isCompletelyVisible(view)
-        if (isVisible != newIsVisible) {
-            isVisible = newIsVisible
-            onVisibilityChanges(isVisible == true)
-        }
-    }
-}
-
-fun LayoutCoordinates.isCompletelyVisible(view: View): Boolean {
-    if (!isAttached) return false
-    // Window relative bounds of our compose root view that are visible on the screen
-    val globalRootRect = Rect()
-    if (!view.getGlobalVisibleRect(globalRootRect)) {
-        // we aren't visible at all.
-        return false
-    }
-    val bounds = boundsInWindow()
-
-    if (bounds.isEmpty) return false
-
-    // Make sure we are completely in bounds.
-    return bounds.top >= globalRootRect.top &&
-        bounds.left >= globalRootRect.left &&
-        bounds.right <= globalRootRect.right &&
-        bounds.bottom <= globalRootRect.bottom
 }
 
 fun Modifier.onVisiblePositionChanges(onVisiblePosition: (Float?) -> Unit): Modifier = composed {
