@@ -34,6 +34,7 @@ import java.util.UUID
  * The Nostr Client manages multiple personae the user may switch between. Events are received and
  * published through multiple relays. Events are stored with their respective persona.
  */
+@OptIn(DelicateCoroutinesApi::class)
 object Client : RelayPool.Listener {
     private var listeners = setOf<Listener>()
     private var relays = emptyArray<Relay>()
@@ -180,7 +181,6 @@ object Client : RelayPool.Listener {
 
     fun isActive(subscriptionId: String): Boolean = subscriptions.contains(subscriptionId)
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun onEvent(
         event: Event,
         subscriptionId: String,
