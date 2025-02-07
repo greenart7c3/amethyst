@@ -193,6 +193,11 @@ private fun InnerReactionRow(
     nav: INav,
 ) {
     GenericInnerReactionRow(
+        showMoneroAddress =
+            baseNote.author
+                ?.info
+                ?.moneroAddress()
+                ?.isNotBlank() ?: false,
         showReactionDetail = showReactionDetail,
         addPadding = addPadding,
         one = {
@@ -221,15 +226,38 @@ private fun InnerReactionRow(
             LikeReaction(baseNote, MaterialTheme.colorScheme.placeholderText, accountViewModel, nav)
         },
         five = {
-            ZapReaction(baseNote, MaterialTheme.colorScheme.placeholderText, accountViewModel, nav = nav)
+            TipReaction(
+                baseNote,
+                MaterialTheme.colorScheme.placeholderText,
+                accountViewModel,
+            )
         },
         six = {
+            ZapReaction(baseNote, MaterialTheme.colorScheme.placeholderText, accountViewModel, nav = nav)
+        },
+        seven = {
             ShareReaction(
                 note = baseNote,
                 grayTint = MaterialTheme.colorScheme.placeholderText,
             )
         },
     )
+}
+
+@Composable
+fun TipReaction(
+    baseNote: Note,
+    grayTint: Color,
+    accountViewModel: AccountViewModel,
+    iconSizeModifier: Modifier = Modifier.size(20.dp),
+) {
+    ClickableBox(
+        modifier = iconSizeModifier,
+        onClick = {
+        },
+    ) {
+        TipIcon(iconSizeModifier, grayTint)
+    }
 }
 
 @Composable
@@ -271,6 +299,7 @@ fun ShareReaction(
 
 @Composable
 private fun GenericInnerReactionRow(
+    showMoneroAddress: Boolean,
     showReactionDetail: Boolean,
     addPadding: Boolean,
     one: @Composable () -> Unit,
@@ -279,6 +308,7 @@ private fun GenericInnerReactionRow(
     four: @Composable () -> Unit,
     five: @Composable () -> Unit,
     six: @Composable () -> Unit,
+    seven: @Composable () -> Unit,
 ) {
     Row(
         verticalAlignment = CenterVertically,
@@ -300,9 +330,13 @@ private fun GenericInnerReactionRow(
 
         Row(verticalAlignment = CenterVertically, horizontalArrangement = RowColSpacing, modifier = Modifier.weight(1f)) { four() }
 
-        Row(verticalAlignment = CenterVertically, modifier = Modifier.weight(1f)) { five() }
+        if (showMoneroAddress) {
+            Row(verticalAlignment = CenterVertically, horizontalArrangement = RowColSpacing, modifier = Modifier.weight(1f)) { five() }
+        }
 
-        Row(verticalAlignment = CenterVertically, modifier = Modifier) { six() }
+        Row(verticalAlignment = CenterVertically, modifier = Modifier.weight(1f)) { six() }
+
+        Row(verticalAlignment = CenterVertically, modifier = Modifier) { seven() }
     }
 }
 
