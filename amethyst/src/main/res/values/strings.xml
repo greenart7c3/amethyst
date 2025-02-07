@@ -1107,4 +1107,5 @@
     <string name="select_list_to_filter">Select a list to filter the feed</string>
 
     <string name="temporary_account">Log off on device lock</string>
+    <string name="monero_address">Monero address</string>
 </resources>

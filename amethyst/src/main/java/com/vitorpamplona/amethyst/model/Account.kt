@@ -1346,6 +1346,7 @@ class Account(
         twitter: String? = null,
         mastodon: String? = null,
         github: String? = null,
+        moneroAddress: String? = null,
     ) {
         if (!isWriteable()) return
 
@@ -1363,8 +1364,10 @@ class Account(
             twitter = twitter,
             mastodon = mastodon,
             github = github,
+            moneroAddress = moneroAddress,
             signer = signer,
         ) {
+            Log.d("metadataEvent", "Sending new metadata ${it.toJson()}")
             Amethyst.instance.client.send(it)
             LocalCache.justConsume(it, null)
         }

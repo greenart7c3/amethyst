@@ -53,6 +53,9 @@ class UserMetadata {
     @Transient
     var tags: ImmutableListOfLists<String>? = null
 
+    @JsonProperty("cryptocurrency_addresses")
+    var cryptoAddresses: Map<String, String>? = null
+
     fun anyName(): String? = displayName ?: name ?: username
 
     fun anyNameStartsWith(prefix: String): Boolean =
@@ -67,6 +70,8 @@ class UserMetadata {
     fun nip05(): String? = nip05
 
     fun profilePicture(): String? = picture
+
+    fun moneroAddress(): String? = cryptoAddresses?.get("monero")
 
     fun cleanBlankNames() {
         if (pronouns == "null") pronouns = null

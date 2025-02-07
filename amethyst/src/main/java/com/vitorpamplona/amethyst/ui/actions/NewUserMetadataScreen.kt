@@ -351,6 +351,21 @@ fun NewUserMetadataScreen(
                         )
                     },
                 )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    label = { Text(text = stringRes(R.string.monero_address)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    value = postViewModel.moneroAddress.value,
+                    onValueChange = { postViewModel.moneroAddress.value = it },
+                    placeholder = {
+                        Text(
+                            text = stringRes(R.string.monero_address),
+                            color = MaterialTheme.colorScheme.placeholderText,
+                        )
+                    },
+                )
             }
         }
     }
