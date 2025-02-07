@@ -22,6 +22,8 @@ package com.vitorpamplona.amethyst.ui.note
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
@@ -251,9 +253,24 @@ fun TipReaction(
     accountViewModel: AccountViewModel,
     iconSizeModifier: Modifier = Modifier.size(20.dp),
 ) {
+    val context = LocalContext.current
+
     ClickableBox(
         modifier = iconSizeModifier,
         onClick = {
+            try {
+                val moneroAddress = baseNote.author?.info?.moneroAddress() ?: return@ClickableBox
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("monero:$moneroAddress"))
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                Log.d("TipReaction", "Failed to open Monero wallet", e)
+                accountViewModel.toast(
+                    R.string.error_dialog_zap_error,
+                    R.string.failed_to_open_monero_wallet,
+                )
+            }
         },
     ) {
         TipIcon(iconSizeModifier, grayTint)
