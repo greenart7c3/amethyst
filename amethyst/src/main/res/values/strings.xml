@@ -1108,4 +1108,5 @@
 
     <string name="temporary_account">Log off on device lock</string>
     <string name="monero_address">Monero address</string>
+    <string name="tip_description">Tip</string>
 </resources>

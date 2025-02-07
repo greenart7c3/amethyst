@@ -377,6 +377,20 @@ fun CommentIcon(
 }
 
 @Composable
+fun TipIcon(
+    modifier: Modifier,
+    tint: Color = Color.Unspecified,
+    contentDescriptor: Int? = R.string.tip_description,
+) {
+    Icon(
+        painter = painterResource(R.drawable.monero),
+        contentDescription = contentDescriptor?.let { stringRes(it) },
+        tint = tint,
+        modifier = modifier,
+    )
+}
+
+@Composable
 fun PollIcon() {
     Icon(
         painter = painterResource(R.drawable.ic_poll),
