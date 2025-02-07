@@ -62,6 +62,7 @@ class NewUserMetadataViewModel : ViewModel() {
     val twitter = mutableStateOf("")
     val github = mutableStateOf("")
     val mastodon = mutableStateOf("")
+    val moneroAddress = mutableStateOf("")
 
     var isUploadingImageForPicture by mutableStateOf(false)
     var isUploadingImageForBanner by mutableStateOf(false)
@@ -84,6 +85,8 @@ class NewUserMetadataViewModel : ViewModel() {
             twitter.value = ""
             github.value = ""
             mastodon.value = ""
+
+            moneroAddress.value = it.info?.moneroAddress() ?: ""
 
             // TODO: Validate Telegram input, somehow.
             it.latestMetadata?.identityClaims()?.forEach {
@@ -112,6 +115,7 @@ class NewUserMetadataViewModel : ViewModel() {
                 twitter = twitter.value,
                 mastodon = mastodon.value,
                 github = github.value,
+                moneroAddress = moneroAddress.value,
             )
             clear()
         }
@@ -130,6 +134,7 @@ class NewUserMetadataViewModel : ViewModel() {
         twitter.value = ""
         github.value = ""
         mastodon.value = ""
+        moneroAddress.value = ""
     }
 
     fun uploadForPicture(
