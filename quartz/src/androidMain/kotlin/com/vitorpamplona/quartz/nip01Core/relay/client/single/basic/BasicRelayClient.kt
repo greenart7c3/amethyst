@@ -254,7 +254,7 @@ open class BasicRelayClient(
         } catch (e: Throwable) {
             if (e is CancellationException) throw e
             stats.newError("Error processing: $text")
-            Log.e(logTag, "Error processing: $text")
+            Log.e(logTag, "Error processing: $text", e)
             listener.onError(this@BasicRelayClient, "", Error("Error processing $text"))
         }
     }
