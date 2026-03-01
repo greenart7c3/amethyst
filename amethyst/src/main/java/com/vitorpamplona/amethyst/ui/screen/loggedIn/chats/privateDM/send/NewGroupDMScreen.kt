@@ -328,7 +328,14 @@ fun MessageFieldRow(
             Size35dp,
             accountViewModel,
         )
-        MessageField(R.string.write_a_message, postViewModel, requestFocus)
+        MessageField(
+            R.string.write_a_message,
+            postViewModel,
+            requestFocus,
+            onMediaReceived = { uri, mimeType ->
+                postViewModel.pickedMedia(persistentListOf(SelectedMedia(uri, mimeType)))
+            },
+        )
     }
 }
 

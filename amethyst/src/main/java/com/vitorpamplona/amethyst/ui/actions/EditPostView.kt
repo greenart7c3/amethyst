@@ -78,7 +78,10 @@ import com.vitorpamplona.amethyst.commons.richtext.RichTextParser
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.service.playback.composable.VideoView
 import com.vitorpamplona.amethyst.service.relayClient.reqCommand.user.observeUserInfo
+import com.vitorpamplona.amethyst.ui.actions.uploads.SelectedMedia
 import com.vitorpamplona.amethyst.ui.actions.uploads.SelectFromGallery
+import com.vitorpamplona.amethyst.ui.components.ThinPaddingTextField
+import kotlinx.collections.immutable.persistentListOf
 import com.vitorpamplona.amethyst.ui.components.BechLink
 import com.vitorpamplona.amethyst.ui.components.LoadUrlPreview
 import com.vitorpamplona.amethyst.ui.navigation.navs.INav
@@ -395,9 +398,12 @@ private fun MessageField(postViewModel: EditPostViewModel) {
         }
     }
 
-    OutlinedTextField(
+    ThinPaddingTextField(
         value = postViewModel.message,
         onValueChange = { postViewModel.updateMessage(it) },
+        onMediaReceived = { uri, mimeType ->
+            postViewModel.selectImage(persistentListOf(SelectedMedia(uri, mimeType)))
+        },
         keyboardOptions =
             KeyboardOptions.Default.copy(
                 capitalization = KeyboardCapitalization.Sentences,
