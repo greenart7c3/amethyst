@@ -21,9 +21,11 @@
 package com.vitorpamplona.amethyst.ui.components
 
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.content.MediaType
 import androidx.compose.foundation.content.ReceiveContentListener
 import androidx.compose.foundation.content.TransferableContent
+import androidx.compose.foundation.content.consume
 import androidx.compose.foundation.content.contentReceiver
 import androidx.compose.foundation.content.hasMediaType
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -281,7 +283,7 @@ private fun ClassicThinPaddingTextField(
  * Uses the new state-based BasicTextField to support receiving rich content
  * (GIFs, images) from the keyboard via the contentReceiver modifier.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 private fun RichContentThinPaddingTextField(
     value: TextFieldValue,
