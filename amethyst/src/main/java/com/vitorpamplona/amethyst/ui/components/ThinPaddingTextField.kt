@@ -377,25 +377,26 @@ private fun RichContentThinPaddingTextField(
     }
 
     val context = LocalContext.current
-    val receiveContentListener = remember(onMediaReceived) {
-        object : ReceiveContentListener {
-            override fun onReceive(transferableContent: TransferableContent): TransferableContent? {
-                if (!transferableContent.hasMediaType(MediaType.Image)) {
-                    return transferableContent
-                }
-                return transferableContent.consume { item ->
-                    val uri = item.uri
-                    if (uri != null) {
-                        val mimeType = context.contentResolver.getType(uri)
-                        onMediaReceived(uri, mimeType)
-                        true
-                    } else {
-                        false
+    val receiveContentListener =
+        remember(onMediaReceived) {
+            object : ReceiveContentListener {
+                override fun onReceive(transferableContent: TransferableContent): TransferableContent? {
+                    if (!transferableContent.hasMediaType(MediaType.Image)) {
+                        return transferableContent
+                    }
+                    return transferableContent.consume { item ->
+                        val uri = item.uri
+                        if (uri != null) {
+                            val mimeType = context.contentResolver.getType(uri)
+                            onMediaReceived(uri, mimeType)
+                            true
+                        } else {
+                            false
+                        }
                     }
                 }
             }
         }
-    }
 
     val lineLimits =
         if (singleLine) {
