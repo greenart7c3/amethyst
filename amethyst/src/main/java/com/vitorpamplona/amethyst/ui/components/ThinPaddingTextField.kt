@@ -421,8 +421,11 @@ private fun RichContentThinPaddingTextField(
             androidx.compose.foundation.text.input.OutputTransformation {
                 val original = AnnotatedString(asCharSequence().toString())
                 val (transformed, _) = visualTransformation.filter(original)
-                if (original.text != transformed.text || original.spanStyles != transformed.spanStyles) {
-                    replace(0, length, transformed)
+                if (original.text != transformed.text) {
+                    replace(0, length, transformed.text)
+                }
+                for (span in transformed.spanStyles) {
+                    addStyle(span.item, span.start, span.end)
                 }
             }
         } else {
@@ -474,7 +477,7 @@ private fun RichContentThinPaddingTextField(
             decorator = { innerTextField ->
                 TextFieldDefaults.DecorationBox(
                     value = textFieldState.text.toString(),
-                    visualTransformation = visualTransformation,
+                    visualTransformation = VisualTransformation.None,
                     innerTextField = innerTextField,
                     placeholder = placeholder,
                     label = label,
