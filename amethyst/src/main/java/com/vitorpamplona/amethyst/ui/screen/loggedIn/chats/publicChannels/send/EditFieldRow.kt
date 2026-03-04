@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.ui.actions.UrlUserTagTransformation
 import com.vitorpamplona.amethyst.ui.actions.uploads.SelectFromGallery
+import com.vitorpamplona.amethyst.ui.actions.uploads.SelectedMedia
 import com.vitorpamplona.amethyst.ui.components.ThinPaddingTextField
 import com.vitorpamplona.amethyst.ui.navigation.navs.INav
 import com.vitorpamplona.amethyst.ui.note.creators.emojiSuggestions.ShowEmojiSuggestionList
@@ -51,6 +52,7 @@ import com.vitorpamplona.amethyst.ui.theme.EditFieldBorder
 import com.vitorpamplona.amethyst.ui.theme.EditFieldModifier
 import com.vitorpamplona.amethyst.ui.theme.EditFieldTrailingIconModifier
 import com.vitorpamplona.amethyst.ui.theme.placeholderText
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.FlowPreview
 
 @OptIn(FlowPreview::class)
@@ -110,6 +112,9 @@ fun EditFieldRow(
         ThinPaddingTextField(
             value = channelScreenModel.message,
             onValueChange = { channelScreenModel.updateMessage(it) },
+            onMediaReceived = { uri, mimeType ->
+                channelScreenModel.pickedMedia(persistentListOf(SelectedMedia(uri, mimeType)))
+            },
             keyboardOptions =
                 KeyboardOptions.Default.copy(
                     capitalization = KeyboardCapitalization.Sentences,

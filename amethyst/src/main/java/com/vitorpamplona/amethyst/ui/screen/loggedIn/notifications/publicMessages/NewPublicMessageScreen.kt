@@ -59,6 +59,7 @@ import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.model.Note
 import com.vitorpamplona.amethyst.ui.actions.UrlUserTagTransformation
 import com.vitorpamplona.amethyst.ui.actions.uploads.SelectFromGallery
+import com.vitorpamplona.amethyst.ui.actions.uploads.SelectedMedia
 import com.vitorpamplona.amethyst.ui.actions.uploads.TakePictureButton
 import com.vitorpamplona.amethyst.ui.actions.uploads.TakeVideoButton
 import com.vitorpamplona.amethyst.ui.components.ThinPaddingTextField
@@ -93,6 +94,7 @@ import com.vitorpamplona.amethyst.ui.theme.Size5dp
 import com.vitorpamplona.amethyst.ui.theme.imageModifier
 import com.vitorpamplona.amethyst.ui.theme.placeholderText
 import com.vitorpamplona.quartz.nip01Core.core.HexKey
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -205,7 +207,14 @@ fun PublicMessageScreenContent(
                     }
                 }
 
-                MessageFieldRow(postViewModel, accountViewModel, postViewModel.toUsers.text.isNotBlank())
+                MessageFieldRow(
+                    postViewModel,
+                    accountViewModel,
+                    postViewModel.toUsers.text.isNotBlank(),
+                    onMediaReceived = { uri, mimeType ->
+                        postViewModel.selectImage(persistentListOf(SelectedMedia(uri, mimeType)))
+                    },
+                )
 
                 DisplayPreviews(postViewModel.urlPreviews, accountViewModel, nav)
 

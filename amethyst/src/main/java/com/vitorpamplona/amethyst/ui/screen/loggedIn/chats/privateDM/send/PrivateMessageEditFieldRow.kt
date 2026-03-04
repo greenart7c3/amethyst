@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.vitorpamplona.amethyst.R
 import com.vitorpamplona.amethyst.ui.actions.UrlUserTagTransformation
 import com.vitorpamplona.amethyst.ui.actions.uploads.SelectFromGallery
+import com.vitorpamplona.amethyst.ui.actions.uploads.SelectedMedia
 import com.vitorpamplona.amethyst.ui.components.ThinPaddingTextField
 import com.vitorpamplona.amethyst.ui.navigation.navs.EmptyNav
 import com.vitorpamplona.amethyst.ui.navigation.navs.INav
@@ -59,6 +60,7 @@ import com.vitorpamplona.amethyst.ui.theme.Font12SP
 import com.vitorpamplona.amethyst.ui.theme.PostKeyboard
 import com.vitorpamplona.amethyst.ui.theme.ThemeComparisonColumn
 import com.vitorpamplona.amethyst.ui.theme.placeholderText
+import kotlinx.collections.immutable.persistentListOf
 
 @Preview
 @Composable
@@ -155,6 +157,9 @@ fun EditField(
     ThinPaddingTextField(
         value = channelScreenModel.message,
         onValueChange = { channelScreenModel.updateMessage(it) },
+        onMediaReceived = { uri, mimeType ->
+            channelScreenModel.pickedMedia(persistentListOf(SelectedMedia(uri, mimeType)))
+        },
         keyboardOptions = PostKeyboard,
         shape = EditFieldBorder,
         modifier = Modifier.fillMaxWidth(),

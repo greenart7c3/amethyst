@@ -232,7 +232,13 @@ fun GroupDMScreenContent(
             ) {
                 SendDirectMessageTo(postViewModel, accountViewModel)
 
-                MessageFieldRow(postViewModel, accountViewModel)
+                MessageFieldRow(
+                    postViewModel,
+                    accountViewModel,
+                    onMediaReceived = { uri, mimeType ->
+                        postViewModel.pickedMedia(persistentListOf(SelectedMedia(uri, mimeType)))
+                    },
+                )
 
                 DisplayPreviews(postViewModel, accountViewModel, nav)
 
@@ -321,6 +327,7 @@ fun MessageFieldRow(
     postViewModel: IMessageField,
     accountViewModel: AccountViewModel,
     requestFocus: Boolean = false,
+    onMediaReceived: ((Uri, String?) -> Unit)? = null,
 ) {
     Row {
         BaseUserPicture(
@@ -328,7 +335,12 @@ fun MessageFieldRow(
             Size35dp,
             accountViewModel,
         )
-        MessageField(R.string.write_a_message, postViewModel, requestFocus)
+        MessageField(
+            R.string.write_a_message,
+            postViewModel,
+            requestFocus,
+            onMediaReceived = onMediaReceived,
+        )
     }
 }
 
