@@ -103,6 +103,7 @@ import com.vitorpamplona.amethyst.ui.screen.loggedIn.home.ShortNotePostScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.home.VoiceReplyScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.home.nip75Goals.NewGoalScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.keyBackup.AccountBackupScreen
+import com.vitorpamplona.amethyst.ui.screen.loggedIn.keyBackup.CloudKeyBackupScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.lists.display.lists.PeopleListScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.lists.display.packs.FollowPackScreen
 import com.vitorpamplona.amethyst.ui.screen.loggedIn.lists.list.ListOfPeopleListsScreen
@@ -245,6 +246,7 @@ fun BuildNavigation(
 
         composableFromEnd<Route.AllSettings> { AllSettingsScreen(accountViewModel, nav) }
         composableFromEnd<Route.AccountBackup> { AccountBackupScreen(accountViewModel, nav) }
+        composableFromEnd<Route.CloudKeyBackup> { CloudKeyBackupScreen(accountViewModel, nav) }
         composableFromEnd<Route.SecurityFilters> { SecurityFiltersScreen(accountViewModel, nav) }
         composableFromEnd<Route.PrivacyOptions> { PrivacyOptionsScreen(nav) }
         composableFromEnd<Route.NamecoinSettings> { NamecoinSettingsScreen(nav) }

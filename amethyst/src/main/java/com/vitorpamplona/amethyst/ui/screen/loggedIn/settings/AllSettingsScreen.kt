@@ -188,6 +188,13 @@ fun AllSettingsScreen(
                 )
                 HorizontalDivider()
                 SettingsNavigationRow(
+                    title = R.string.cloud_key_backup,
+                    icon = Icons.Outlined.CloudUpload,
+                    tint = tint,
+                    onClick = { nav.nav(Route.CloudKeyBackup) },
+                )
+                HorizontalDivider()
+                SettingsNavigationRow(
                     title = R.string.request_to_vanish,
                     icon = Icons.Outlined.DeleteForever,
                     tint = tint,

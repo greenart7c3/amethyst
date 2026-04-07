@@ -116,6 +116,8 @@ sealed class Route {
 
     @Serializable object AccountBackup : Route()
 
+    @Serializable object CloudKeyBackup : Route()
+
     @Serializable object Settings : Route()
 
     @Serializable object UserSettings : Route()

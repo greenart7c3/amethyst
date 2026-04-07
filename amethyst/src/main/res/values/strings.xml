@@ -336,6 +336,33 @@
     </string>
 
     <string name="failed_to_encrypt_key">Failed to encrypt your private key</string>
+
+    <string name="cloud_key_backup">Cloud Key Backup</string>
+    <string name="cloud_key_backup_description">Save your encrypted private key to a file, Google Drive, or a WebDAV server. No API keys required — the system file picker or your own server credentials are used to store the backup.</string>
+    <string name="cloud_backup_encryption_password_label">Encryption Password</string>
+    <string name="cloud_backup_encryption_password_hint">Password to encrypt the key (required)</string>
+    <string name="cloud_backup_password_required">A password is required to encrypt your key</string>
+    <string name="cloud_backup_file_section_title">File / Cloud Storage</string>
+    <string name="cloud_backup_file_section_description">Save to any location the system file picker supports, including Google Drive, local storage, or other installed cloud providers.</string>
+    <string name="cloud_backup_save_to_file">Save to File</string>
+    <string name="cloud_backup_restore_from_file">Restore from File</string>
+    <string name="cloud_backup_saved_to_file">Encrypted key saved to file</string>
+    <string name="cloud_backup_restore_failed">Failed to read backup file</string>
+    <string name="cloud_backup_restored_key_copied">Encrypted key copied to clipboard. Use it to log in.</string>
+    <string name="cloud_backup_save_title">Save Encrypted Key</string>
+    <string name="cloud_backup_restore_title">Restore Encrypted Key</string>
+    <string name="cloud_backup_webdav_section_title">WebDAV</string>
+    <string name="cloud_backup_webdav_section_description">Save to a WebDAV server (e.g. Nextcloud, ownCloud) using your own server URL and credentials. No third-party API keys needed.</string>
+    <string name="cloud_backup_webdav_server_url">Server URL</string>
+    <string name="cloud_backup_webdav_username">Username</string>
+    <string name="cloud_backup_webdav_password">Server Password</string>
+    <string name="cloud_backup_save_to_webdav">Save to WebDAV</string>
+    <string name="cloud_backup_restore_from_webdav">Restore from WebDAV</string>
+    <string name="cloud_backup_saved_to_webdav">Encrypted key saved to WebDAV server</string>
+    <string name="cloud_backup_webdav_failed">WebDAV operation failed</string>
+    <string name="cloud_backup_saving">Saving…</string>
+    <string name="cloud_backup_loading">Loading…</string>
+    <string name="cloud_backup_webdav_restore_hint">The restored key (ncryptsec) will be copied to your clipboard. Use it with your encryption password to log in.</string>
     <string name="secret_key_copied_to_clipboard">Secret key (nsec) copied to clipboard</string>
     <string name="copy_my_secret_key">Copy my secret key</string>
     <string name="encrypt_and_copy_my_secret_key">Encrypt and copy my secret key</string>
