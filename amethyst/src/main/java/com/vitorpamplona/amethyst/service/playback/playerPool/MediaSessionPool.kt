@@ -38,6 +38,7 @@ import androidx.media3.session.MediaSession
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.vitorpamplona.amethyst.service.playback.composable.mediaitem.MediaItemCache
+import com.vitorpamplona.amethyst.service.playback.pip.BackgroundMedia
 import com.vitorpamplona.amethyst.ui.MainActivity
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -239,6 +240,24 @@ class MediaSessionPool(
             controller: MediaSession.ControllerInfo,
         ) {
             pool.releaseSession(session)
+        }
+
+        // Bluetooth / headset / lock-screen media buttons target the most-recently-active
+        // MediaSession. Without this gate they wake up an inline feed video that the user
+        // paused (still alive in the warm-pool LRU) and start it playing on the freshly
+        // connected output device. Returning true here tells Media3 the event is consumed
+        // and skips the default "convert to player command and dispatch" behavior. Only
+        // honor external media buttons for the session explicitly registered via
+        // RegisterBackgroundMedia.
+        override fun onMediaButtonEvent(
+            session: MediaSession,
+            controllerInfo: MediaSession.ControllerInfo,
+            intent: Intent,
+        ): Boolean {
+            if (!session.player.isPlaying && BackgroundMedia.bgInstance?.id != session.id) {
+                return true
+            }
+            return super.onMediaButtonEvent(session, controllerInfo, intent)
         }
     }
 
