@@ -279,6 +279,33 @@ class AccountSettings(
         return false
     }
 
+    fun changeShowHomeNewThreadsTab(show: Boolean): Boolean {
+        if (syncedSettings.home.showNewThreadsTab.value != show) {
+            syncedSettings.home.showNewThreadsTab.tryEmit(show)
+            saveAccountSettings()
+            return true
+        }
+        return false
+    }
+
+    fun changeShowHomeConversationsTab(show: Boolean): Boolean {
+        if (syncedSettings.home.showConversationsTab.value != show) {
+            syncedSettings.home.showConversationsTab.tryEmit(show)
+            saveAccountSettings()
+            return true
+        }
+        return false
+    }
+
+    fun changeShowHomeEverythingTab(show: Boolean): Boolean {
+        if (syncedSettings.home.showEverythingTab.value != show) {
+            syncedSettings.home.showEverythingTab.tryEmit(show)
+            saveAccountSettings()
+            return true
+        }
+        return false
+    }
+
     fun defaultNwcWallet(): NwcWalletEntryNorm? {
         val id = defaultNwcWalletId.value
         val wallets = nwcWallets.value

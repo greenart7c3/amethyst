@@ -579,6 +579,24 @@ class Account(
         }
     }
 
+    suspend fun changeShowHomeNewThreadsTab(show: Boolean) {
+        if (settings.changeShowHomeNewThreadsTab(show)) {
+            sendNewAppSpecificData()
+        }
+    }
+
+    suspend fun changeShowHomeConversationsTab(show: Boolean) {
+        if (settings.changeShowHomeConversationsTab(show)) {
+            sendNewAppSpecificData()
+        }
+    }
+
+    suspend fun changeShowHomeEverythingTab(show: Boolean) {
+        if (settings.changeShowHomeEverythingTab(show)) {
+            sendNewAppSpecificData()
+        }
+    }
+
     suspend fun updateZapAmounts(
         amountSet: List<Long>,
         selectedZapType: LnZapEvent.ZapType,

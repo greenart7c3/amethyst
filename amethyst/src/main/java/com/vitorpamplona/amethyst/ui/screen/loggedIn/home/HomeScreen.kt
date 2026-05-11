@@ -148,11 +148,14 @@ private fun AssembleHomeTabs(
     accountViewModel: AccountViewModel,
     inner: @Composable (PagerState, ImmutableList<TabItem>) -> Unit,
 ) {
-    val showNewThreads by accountViewModel.settings.uiSettingsFlow.showHomeNewThreadsTab
+    val showNewThreads by accountViewModel
+        .showHomeNewThreadsTabFlow()
         .collectAsStateWithLifecycle()
-    val showConversations by accountViewModel.settings.uiSettingsFlow.showHomeConversationsTab
+    val showConversations by accountViewModel
+        .showHomeConversationsTabFlow()
         .collectAsStateWithLifecycle()
-    val showEverything by accountViewModel.settings.uiSettingsFlow.showHomeEverythingTab
+    val showEverything by accountViewModel
+        .showHomeEverythingTabFlow()
         .collectAsStateWithLifecycle()
 
     val tabs by

@@ -81,11 +81,9 @@ fun HomeTabsSettingsScreen(
 
 @Composable
 fun HomeTabsSettingsContent(accountViewModel: AccountViewModel) {
-    val ui = accountViewModel.settings.uiSettingsFlow
-
-    val showNewThreads by ui.showHomeNewThreadsTab.collectAsStateWithLifecycle()
-    val showConversations by ui.showHomeConversationsTab.collectAsStateWithLifecycle()
-    val showEverything by ui.showHomeEverythingTab.collectAsStateWithLifecycle()
+    val showNewThreads by accountViewModel.showHomeNewThreadsTabFlow().collectAsStateWithLifecycle()
+    val showConversations by accountViewModel.showHomeConversationsTabFlow().collectAsStateWithLifecycle()
+    val showEverything by accountViewModel.showHomeEverythingTabFlow().collectAsStateWithLifecycle()
 
     val activeCount = listOf(showNewThreads, showConversations, showEverything).count { it }
 
@@ -110,7 +108,7 @@ fun HomeTabsSettingsContent(accountViewModel: AccountViewModel) {
             // Don't allow disabling the last remaining tab.
             enabled = !(showNewThreads && activeCount == 1),
             onCheckedChange = {
-                ui.showHomeNewThreadsTab.tryEmit(it)
+                accountViewModel.changeShowHomeNewThreadsTab(it)
             },
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = Size20dp))
@@ -120,7 +118,7 @@ fun HomeTabsSettingsContent(accountViewModel: AccountViewModel) {
             checked = showConversations,
             enabled = !(showConversations && activeCount == 1),
             onCheckedChange = {
-                ui.showHomeConversationsTab.tryEmit(it)
+                accountViewModel.changeShowHomeConversationsTab(it)
             },
         )
         HorizontalDivider(modifier = Modifier.padding(horizontal = Size20dp))
@@ -130,7 +128,7 @@ fun HomeTabsSettingsContent(accountViewModel: AccountViewModel) {
             checked = showEverything,
             enabled = !(showEverything && activeCount == 1),
             onCheckedChange = {
-                ui.showHomeEverythingTab.tryEmit(it)
+                accountViewModel.changeShowHomeEverythingTab(it)
             },
         )
 

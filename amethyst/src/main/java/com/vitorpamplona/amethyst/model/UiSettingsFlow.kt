@@ -44,9 +44,6 @@ class UiSettingsFlow(
     val automaticallyProposeAiImprovements: MutableStateFlow<BooleanType> = MutableStateFlow(BooleanType.ALWAYS),
     val useTrackedBroadcasts: MutableStateFlow<BooleanType> = MutableStateFlow(BooleanType.ALWAYS),
     val bottomBarItems: MutableStateFlow<List<NavBarItem>> = MutableStateFlow(DefaultBottomBarItems),
-    val showHomeNewThreadsTab: MutableStateFlow<Boolean> = MutableStateFlow(true),
-    val showHomeConversationsTab: MutableStateFlow<Boolean> = MutableStateFlow(true),
-    val showHomeEverythingTab: MutableStateFlow<Boolean> = MutableStateFlow(false),
 ) {
     val listOfFlows: List<Flow<Any?>> =
         listOf<Flow<Any?>>(
@@ -65,9 +62,6 @@ class UiSettingsFlow(
             automaticallyProposeAiImprovements,
             useTrackedBroadcasts,
             bottomBarItems,
-            showHomeNewThreadsTab,
-            showHomeConversationsTab,
-            showHomeEverythingTab,
         )
 
     // emits at every change in any of the propertyes.
@@ -90,9 +84,6 @@ class UiSettingsFlow(
                 flows[12] as BooleanType,
                 flows[13] as BooleanType,
                 flows[14] as List<NavBarItem>,
-                flows[15] as Boolean,
-                flows[16] as Boolean,
-                flows[17] as Boolean,
             )
         }
 
@@ -113,9 +104,6 @@ class UiSettingsFlow(
             automaticallyProposeAiImprovements.value,
             useTrackedBroadcasts.value,
             bottomBarItems.value,
-            showHomeNewThreadsTab.value,
-            showHomeConversationsTab.value,
-            showHomeEverythingTab.value,
         )
 
     fun update(torSettings: UiSettings): Boolean {
@@ -181,18 +169,6 @@ class UiSettingsFlow(
             bottomBarItems.tryEmit(torSettings.bottomBarItems)
             any = true
         }
-        if (showHomeNewThreadsTab.value != torSettings.showHomeNewThreadsTab) {
-            showHomeNewThreadsTab.tryEmit(torSettings.showHomeNewThreadsTab)
-            any = true
-        }
-        if (showHomeConversationsTab.value != torSettings.showHomeConversationsTab) {
-            showHomeConversationsTab.tryEmit(torSettings.showHomeConversationsTab)
-            any = true
-        }
-        if (showHomeEverythingTab.value != torSettings.showHomeEverythingTab) {
-            showHomeEverythingTab.tryEmit(torSettings.showHomeEverythingTab)
-            any = true
-        }
 
         return any
     }
@@ -227,9 +203,6 @@ class UiSettingsFlow(
                 MutableStateFlow(uiSettings.automaticallyProposeAiImprovements),
                 MutableStateFlow(uiSettings.useTrackedBroadcasts),
                 MutableStateFlow(uiSettings.bottomBarItems),
-                MutableStateFlow(uiSettings.showHomeNewThreadsTab),
-                MutableStateFlow(uiSettings.showHomeConversationsTab),
-                MutableStateFlow(uiSettings.showHomeEverythingTab),
             )
     }
 }

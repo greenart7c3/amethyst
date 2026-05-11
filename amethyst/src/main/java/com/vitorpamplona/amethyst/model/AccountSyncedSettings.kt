@@ -61,6 +61,12 @@ class AccountSyncedSettings(
         AccountVideoPlayerPreferences(
             MutableStateFlow(internalSettings.videoPlayer.buttonItems.toImmutableList()),
         )
+    val home =
+        AccountHomePreferences(
+            MutableStateFlow(internalSettings.home.showNewThreadsTab),
+            MutableStateFlow(internalSettings.home.showConversationsTab),
+            MutableStateFlow(internalSettings.home.showEverythingTab),
+        )
 
     fun toInternal(): AccountSyncedSettingsInternal =
         AccountSyncedSettingsInternal(
@@ -86,6 +92,12 @@ class AccountSyncedSettings(
                     security.disableClientTag.value,
                 ),
             videoPlayer = AccountVideoPlayerPreferencesInternal(videoPlayer.buttonItems.value),
+            home =
+                AccountHomePreferencesInternal(
+                    home.showNewThreadsTab.value,
+                    home.showConversationsTab.value,
+                    home.showEverythingTab.value,
+                ),
         )
 
     fun updateFrom(syncedSettingsInternal: AccountSyncedSettingsInternal) {
@@ -148,6 +160,18 @@ class AccountSyncedSettings(
         if (!equalImmutableLists(videoPlayer.buttonItems.value, newVideoPlayerButtonItems)) {
             videoPlayer.buttonItems.tryEmit(newVideoPlayerButtonItems)
         }
+
+        if (home.showNewThreadsTab.value != syncedSettingsInternal.home.showNewThreadsTab) {
+            home.showNewThreadsTab.tryEmit(syncedSettingsInternal.home.showNewThreadsTab)
+        }
+
+        if (home.showConversationsTab.value != syncedSettingsInternal.home.showConversationsTab) {
+            home.showConversationsTab.tryEmit(syncedSettingsInternal.home.showConversationsTab)
+        }
+
+        if (home.showEverythingTab.value != syncedSettingsInternal.home.showEverythingTab) {
+            home.showEverythingTab.tryEmit(syncedSettingsInternal.home.showEverythingTab)
+        }
     }
 
     fun dontTranslateFromFilteredBySpokenLanguages(): Set<String> = languages.dontTranslateFrom.value - getLanguagesSpokenByUser()
@@ -168,6 +192,13 @@ class AccountVideoPlayerPreferences(
 class AccountZapPreferences(
     var zapAmountChoices: MutableStateFlow<ImmutableList<Long>>,
     val defaultZapType: MutableStateFlow<LnZapEvent.ZapType>,
+)
+
+@Stable
+class AccountHomePreferences(
+    val showNewThreadsTab: MutableStateFlow<Boolean>,
+    val showConversationsTab: MutableStateFlow<Boolean>,
+    val showEverythingTab: MutableStateFlow<Boolean>,
 )
 
 @Stable

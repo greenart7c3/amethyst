@@ -1187,6 +1187,27 @@ class AccountViewModel(
             account.changeVideoPlayerButtonItems(items)
         }
 
+    fun showHomeNewThreadsTabFlow() = account.settings.syncedSettings.home.showNewThreadsTab
+
+    fun showHomeConversationsTabFlow() = account.settings.syncedSettings.home.showConversationsTab
+
+    fun showHomeEverythingTabFlow() = account.settings.syncedSettings.home.showEverythingTab
+
+    fun changeShowHomeNewThreadsTab(show: Boolean) =
+        launchSigner {
+            account.changeShowHomeNewThreadsTab(show)
+        }
+
+    fun changeShowHomeConversationsTab(show: Boolean) =
+        launchSigner {
+            account.changeShowHomeConversationsTab(show)
+        }
+
+    fun changeShowHomeEverythingTab(show: Boolean) =
+        launchSigner {
+            account.changeShowHomeEverythingTab(show)
+        }
+
     fun updateZapAmounts(
         amountSet: List<Long>,
         selectedZapType: LnZapEvent.ZapType,

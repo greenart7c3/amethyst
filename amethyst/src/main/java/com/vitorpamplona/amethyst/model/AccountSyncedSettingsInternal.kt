@@ -114,6 +114,14 @@ class AccountSyncedSettingsInternal(
     val languages: AccountLanguagePreferencesInternal = AccountLanguagePreferencesInternal(),
     val security: AccountSecurityPreferencesInternal = AccountSecurityPreferencesInternal(),
     val videoPlayer: AccountVideoPlayerPreferencesInternal = AccountVideoPlayerPreferencesInternal(),
+    val home: AccountHomePreferencesInternal = AccountHomePreferencesInternal(),
+)
+
+@Serializable
+class AccountHomePreferencesInternal(
+    var showNewThreadsTab: Boolean = true,
+    var showConversationsTab: Boolean = true,
+    var showEverythingTab: Boolean = false,
 )
 
 @Serializable
