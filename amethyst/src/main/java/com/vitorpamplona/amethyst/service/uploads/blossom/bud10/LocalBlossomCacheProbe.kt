@@ -20,6 +20,7 @@
  */
 package com.vitorpamplona.amethyst.service.uploads.blossom.bud10
 
+import android.util.Log
 import com.vitorpamplona.amethyst.model.privacyOptions.IRoleBasedHttpClientBuilder
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -96,13 +97,16 @@ class LocalBlossomCacheProbe(
                     .build()
 
             client.newCall(request).executeAsync().use { response ->
-                // Spec says HEAD / returns 2xx when available. Some implementations
-                // may answer 405 (method not allowed) while still being a working
-                // Blossom cache, so treat that as available too.
-                response.isSuccessful || response.code == 405
+                // Any HTTP response — including 404/400 from an implementation that
+                // doesn't expose a root handler — proves the loopback server is
+                // reachable. Only a network-layer failure (connection refused,
+                // timeout) counts as "down".
+                Log.d(TAG, "Local Blossom cache probe at $LOCAL_CACHE_BASE/ → HTTP ${response.code} (available)")
+                true
             }
         } catch (e: Exception) {
             if (e is CancellationException) throw e
+            Log.d(TAG, "Local Blossom cache probe at $LOCAL_CACHE_BASE/ failed: ${e.javaClass.simpleName}: ${e.message}")
             false
         }
 
@@ -110,6 +114,7 @@ class LocalBlossomCacheProbe(
 
     companion object {
         const val LOCAL_CACHE_BASE: String = "http://127.0.0.1:24242"
+        private const val TAG = "LocalBlossomCacheProbe"
         private const val POSITIVE_TTL_MS = 60_000L
         private const val NEGATIVE_TTL_MS = 10_000L
         private const val PROBE_TIMEOUT_MS = 1_500L
