@@ -213,4 +213,31 @@ class MediaUrlContentExtTest {
         val url = "https://example.com/$sha/avatar.jpg"
         assertEquals(url, bridgeProfilePictureUrl(url, useBridge = true))
     }
+
+    @Test
+    fun bridgeOnSkipsWhenShaIsMidSegmentWithCdnPrefix() {
+        // nostr.build/i/nostr.build_<sha>.jpg: the sha is embedded inside a
+        // longer filename. Per BUD-01 (`/<sha256>[.<ext>]`) this is NOT a
+        // Blossom URL — rewriting it would point the cache at
+        // `https://nostr.build/i/<sha>` (no prefix), which 404s upstream.
+        val url = "https://nostr.build/i/nostr.build_$sha.jpg"
+        val image = MediaUrlImage(url = url, hash = null)
+        assertEquals(url, image.toCoilModel(useLocalBlossomBridge = true))
+    }
+
+    @Test
+    fun bridgeOnSkipsWhenShaIsMidSegmentEvenWithExplicitHash() {
+        // Same URL but with `hash` populated from event imeta tags. Without
+        // the BUD-01 alignment check the bridge would still rewrite using
+        // the explicit hash and route the cache at `<host>/i/<sha>` — 404.
+        val url = "https://nostr.build/i/nostr.build_$sha.jpg"
+        val image = MediaUrlImage(url = url, hash = sha)
+        assertEquals(url, image.toCoilModel(useLocalBlossomBridge = true))
+    }
+
+    @Test
+    fun bridgeProfilePictureUrlSkipsWhenShaIsMidSegmentWithCdnPrefix() {
+        val url = "https://nostr.build/i/nostr.build_$sha.jpg"
+        assertEquals(url, bridgeProfilePictureUrl(url, useBridge = true))
+    }
 }

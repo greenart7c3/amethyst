@@ -23,7 +23,7 @@ package com.vitorpamplona.amethyst.commons.richtext
 import com.vitorpamplona.quartz.nipB7Blossom.BlossomUri
 
 private val sha256HexRegex = Regex("[0-9a-f]{64}")
-private val sha256InPathRegex = Regex("(?<![0-9a-fA-F])[0-9a-fA-F]{64}(?![0-9a-fA-F])")
+private val sha256InPathRegex = Regex("^[0-9a-fA-F]{64}(?![0-9a-fA-F])")
 
 /**
  * Converts this media content into a Coil/ExoPlayer-friendly model string.
@@ -144,10 +144,12 @@ private fun percentEncode(input: String): String {
 }
 
 private fun extractSha256FromUrlPath(url: String): String? {
-    // Per Blossom (BUD-01) the blob is always the last path segment. If the
-    // last segment isn't a sha256, this isn't a Blossom URL and the bridge
-    // must leave it alone — even if an earlier path segment happens to be
-    // a 64-char hex (e.g. a per-user cache prefix).
+    // Per Blossom (BUD-01) the blob path is `/<sha256>[.<ext>]`, so the
+    // last segment must START with the sha256 — not merely contain it.
+    // A segment like `nostr.build_<sha>.jpg` is a CDN-prefixed filename,
+    // not a Blossom blob, and the bridge must leave it alone: rewriting
+    // it would point the cache at `<host>/<sha>` (without the prefix),
+    // which 404s upstream.
     val pathPart = url.substringBefore('?').substringBefore('#')
     val lastSegment = pathPart.substringAfterLast('/')
     val match = sha256InPathRegex.find(lastSegment) ?: return null
@@ -183,6 +185,11 @@ private fun guessExtension(
  * upstream CDN uses (e.g. `https://cdn.nostr.build/i` for nostr.build's
  * `/i/<sha>` scheme). Falls back to scheme+host when the sha can't be
  * located in the path.
+ *
+ * Returns `null` (skip bridging) when the sha is found mid-segment — e.g.
+ * `nostr.build_<sha>.jpg` — because per BUD-01 the blob path must be
+ * `/<sha256>[.<ext>]`. Such a URL is a CDN-prefixed filename, not a Blossom
+ * blob, and the cache can't reconstruct it from a `<base>/<sha>` template.
  */
 private fun extractServerBase(
     url: String,
@@ -196,12 +203,14 @@ private fun extractServerBase(
 
     val shaIndex = pathPart.lastIndexOf(sha, ignoreCase = true)
     if (shaIndex >= 0) {
-        // Anchor on the slash immediately preceding the sha so the cache
-        // can append "/<sha>" verbatim per the local-blossom-cache spec.
-        val slashBeforeSha = pathPart.lastIndexOf('/', shaIndex - 1)
-        if (slashBeforeSha > hostStart - 1) {
-            return pathPart.substring(0, slashBeforeSha)
-        }
+        // BUD-01: the sha must be the LAST path segment (modulo extension),
+        // i.e. immediately after `/`. If anything other than `/` precedes
+        // the sha (e.g. `nostr.build_<sha>.jpg`), the URL is not a Blossom
+        // blob — return null so the caller skips the bridge and fetches
+        // the original URL directly.
+        if (shaIndex - 1 < hostStart) return extractHostBase(pathPart)
+        if (pathPart[shaIndex - 1] != '/') return null
+        return pathPart.substring(0, shaIndex - 1)
     }
     return extractHostBase(pathPart)
 }

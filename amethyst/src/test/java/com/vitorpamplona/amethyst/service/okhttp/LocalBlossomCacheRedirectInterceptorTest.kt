@@ -163,6 +163,31 @@ class LocalBlossomCacheRedirectInterceptorTest {
         response.close()
     }
 
+    @Test
+    fun bridgeOnSkipsWhenShaIsMidSegmentWithCdnPrefix() {
+        // nostr.build/i/nostr.build_<sha>.jpg: the sha is embedded inside a
+        // longer filename. Per BUD-01 (`/<sha256>[.<ext>]`) this is NOT a
+        // Blossom URL — rewriting it would point the cache at
+        // `https://nostr.build/i/<sha>` (no prefix), which 404s upstream.
+        val interceptor = LocalBlossomCacheRedirectInterceptor { true }
+        val captured = mutableListOf<String>()
+        val url = "https://nostr.build/i/nostr.build_$sha.jpg"
+        val response = interceptor.intercept(fakeChain(url, captured))
+        assertEquals(url, captured.single())
+        response.close()
+    }
+
+    @Test
+    fun bridgeOnSkipsWhenShaIsMidSegmentWithHexPrefix() {
+        // Defensive: even a hex prefix shouldn't make this look BUD-01.
+        val interceptor = LocalBlossomCacheRedirectInterceptor { true }
+        val captured = mutableListOf<String>()
+        val url = "https://example.com/deadbeef$sha.jpg"
+        val response = interceptor.intercept(fakeChain(url, captured))
+        assertEquals(url, captured.single())
+        response.close()
+    }
+
     private fun fakeChain(
         url: String,
         captured: MutableList<String>,
