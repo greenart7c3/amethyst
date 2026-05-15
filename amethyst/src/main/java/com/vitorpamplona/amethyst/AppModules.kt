@@ -581,6 +581,10 @@ class AppModules(
 
         // initializes diskcache on an IO thread.
         applicationIOScope.launch {
+            // Probe the local Blossom cache before the image loader goes live so the
+            // very first image request already sees the right bridge decision. The
+            // probe has a 1.5s timeout, so worst case startup pays that once.
+            localBlossomCacheProbe.isAvailable()
             // Sets Coil - Tor - OkHttp link
             setImageLoader()
         }
@@ -645,12 +649,6 @@ class AppModules(
                 blossomResolver.blossomHitCache.cache.evictAll()
             }
         }
-        // Warm the local-cache probe so the very first image load doesn't pay
-        // the loopback round-trip cost.
-        applicationIOScope.launch {
-            localBlossomCacheProbe.isAvailable()
-        }
-
         // Warms the video cache off the main thread. SimpleCache's constructor opens a SQLite
         // index over StandaloneDatabaseProvider and walks every cached span on disk — up to a
         // few hundred ms on a populated 4 GB cache — so leaving it for the first session's
